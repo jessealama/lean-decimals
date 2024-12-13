@@ -12,17 +12,25 @@ def scale10 (q : Int) : Rat :=
 def maxCohortValue : Rat := scale10 34
 
 def isRationalSuitable (v : Rat) : Prop :=
-  let abs := |v|
   ∃ q : Int,
-  let scaled := abs * (scale10 (0 - q))
-  let isInt := Rat.isInt scaled
-  let absPos := abs > 0
-  let absNotTooBig := abs < maxCohortValue
-  isInt ∧ absPos ∧ absNotTooBig
+  Rat.isInt (|v| * (scale10 (0 - q)))
+  ∧ |v| > 0
+  ∧ |v| < maxCohortValue
+
+-- lemma absNeg (v : Rat) : abs (-v) = |v| := by sorry
 
 theorem negationPreservesSuitability (v : Rat) :
   isRationalSuitable v → isRationalSuitable (-v)
-  := by sorry
+  := by
+  intro h
+  obtain ⟨q, h⟩ := h
+  obtain ⟨isInt, absPos, absNotTooBig⟩ := h
+  exists q
+  constructor
+  · rw [abs_neg, isInt]
+  · constructor
+    · simp [abs_neg, absPos]
+    · simp [abs_neg, absNotTooBig]
 
 def SuitableRationals : Type := { q : Rat // isRationalSuitable q }
 
