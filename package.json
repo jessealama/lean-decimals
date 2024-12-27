@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/jessealama/lean-decimals/issues"
   },
-  "homepage": "https://github.com/jessealama/lean-decimals#readme"
+  "homepage": "https://github.com/jessealama/lean-decimals#readme",
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
 }
