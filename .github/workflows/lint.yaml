@@ -1,18 +1,18 @@
 on: push
 name: Lint
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@master
-            - uses: actions/setup-node@master
-              with:
-                  node-version: 22
-            - name: check node version
-              run: node --version
-            - name: check npm version
-              run: npm --version
-            - name: npm install
-              run: npm install
-            - name: lint
-              run: npm run lint
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@master
+        with:
+          node-version: 22
+      - name: check node version
+        run: node --version
+      - name: check npm version
+        run: npm --version
+      - name: npm install
+        run: npm install
+      - name: lint
+        run: npm run lint

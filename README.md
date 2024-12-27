@@ -1,6 +1,6 @@
 # About
 
-This repository is a formalization, in [Lean](https://lean-lang.org), of [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754#2019) decimal floating-point arithmetic. No, not *binary* floating-point arithmetic. *Decimal* arithmetic. Where `"0.1"` and `"0.3"` really are, exactly, 0.1 and 0.3, not a base-2 approximation thereof.
+This repository is a formalization, in [Lean](https://lean-lang.org), of [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754#2019) decimal floating-point arithmetic. No, not _binary_ floating-point arithmetic. _Decimal_ arithmetic. Where `"0.1"` and `"0.3"` really are, exactly, 0.1 and 0.3, not a base-2 approximation thereof.
 
 ## Motivation
 
