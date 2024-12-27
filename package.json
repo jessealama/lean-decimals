@@ -1,0 +1,24 @@
+{
+  "name": "lean-decimals",
+  "version": "0.0.0",
+  "description": "Formalizing IEEE 754 decimal arithmetic in Lean (JS dev infra)",
+  "scripts": {
+    "format": "prettier . --write",
+    "lint": "prettier . --check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jessealama/lean-decimals.git"
+  },
+  "keywords": [
+    "lean",
+    "formalization",
+    "proof"
+  ],
+  "author": "Jesse Alama",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jessealama/lean-decimals/issues"
+  },
+  "homepage": "https://github.com/jessealama/lean-decimals#readme"
+}
