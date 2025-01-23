@@ -62,12 +62,12 @@ def rationalExponentAndSignificand (x : Rat) : Option (Int × Rat) :=
 def rationalExponent (x : Rat) : Option Int :=
   match rationalExponentAndSignificand x with
   | none => none
-  | some (e, _) => some e
+  | some (e, _) => e
 
 def rationalSignificand (x : Rat) : Option Rat :=
   match rationalExponentAndSignificand x with
   | none => none
-  | some (_, s) => some s
+  | some (_, s) => s
 
 instance : Neg SuitableRationals where
   neg x := ⟨-x.val, negationPreservesSuitability x.val x.property⟩
