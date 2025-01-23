@@ -97,7 +97,6 @@ def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
       exact
     let vPos : PositiveRational := ⟨v, positive⟩
     match rationalExponent v with
-    | none => Decimal128Value.NaN
     | some e =>
         let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
         let m : Rat := v * (rat10 ^ (0 - te))
@@ -109,8 +108,9 @@ def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
         else
           let x : Rat := rounded * (10 ^ te)
           have suitable : isRationalSuitable x := by sorry
-          let y : SuitableRationals := ⟨x, suitable⟩
+          let y : SuitableRationals := (x, suitable)
           Decimal128Value.Rational y
+    | _ => Decimal128Value.NaN
 
 def add (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   match x, y with
