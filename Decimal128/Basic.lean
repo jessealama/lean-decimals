@@ -92,7 +92,9 @@ def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
     | Decimal128Value.Rational q => Decimal128Value.Rational (-q)
     | _ => Decimal128Value.NaN
   else
-    have positive : v > 0 := by sorry
+    have positive : v > 0 := by
+      rw [←not_lt] at n
+      exact
     let vPos : PositiveRational := ⟨v, positive⟩
     match rationalExponent v with
     | none => Decimal128Value.NaN
