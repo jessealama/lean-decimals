@@ -11,8 +11,6 @@ def isRationalSuitable (v : Rat) : Prop :=
   ∧ |v| > 0
   ∧ |v| < maxCohortValue
 
--- lemma absNeg (v : Rat) : abs (-v) = |v| := by sorry
-
 theorem negationPreservesSuitability (v : Rat) :
   isRationalSuitable v → isRationalSuitable (-v)
   := by
