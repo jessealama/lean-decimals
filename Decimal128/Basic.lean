@@ -107,8 +107,9 @@ def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
       else if rounded = 10 ^ maxSignificantDigits
       then Decimal128Value.PosInfinity
       else
-        have suitable : isRationalSuitable rounded := by sorry
-      Decimal128Value.Rational ⟨rounded * (10 ^ te), suitable⟩
+        let x : Rat := rounded * (10 ^ te)
+        have suitable : isRationalSuitable x := by sorry
+        Decimal128Value.Rational ⟨x, suitable⟩
 
 def add (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   match x, y with
