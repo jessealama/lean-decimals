@@ -1,6 +1,7 @@
 import Mathlib
 import Decimal128.Constants
 import Decimal128.Util
+import Decimal128.Round
 
 def maxCohortValue : Rat := scale10 34
 
@@ -55,9 +56,6 @@ def mathematicalValue (x : FiniteDecimal128) : Rat :=
   | ⟨Decimal128Value.Rational ⟨q, _⟩, _⟩ => q
   | _ => 0
 
-def PositiveRational : Type := { x : Rat // x > 0 }
-def NonZeroRational : Type := { x : Rat // x ≠ 0 }
-
 def rationalExponentAndSignificand (x : Rat) : Option (Int × Rat) :=
   some (0, Rat.mk' 0 1)
 
@@ -71,41 +69,6 @@ def rationalSignificand (x : Rat) : Option Rat :=
   | none => none
   | some (_, s) => some s
 
-inductive RoundingMode where
-  | ceil : RoundingMode
-  | floor : RoundingMode
-  | trunc : RoundingMode
-  | halfExpand : RoundingMode
-  | halfEven : RoundingMode
-
-def ApplyRoundingModeToPositive (m : PositiveRational) (r : RoundingMode) : Int :=
-  let mLow := Rat.floor m.1
-  let fraction := m.1 - mLow
-  let mHigh := mLow + 1
-  match fraction with
-  | 0 => mLow
-  | _ => match r with
-    | RoundingMode.floor => mLow
-    | RoundingMode.trunc => mLow
-    | RoundingMode.ceil => mHigh
-    | _ => if fraction < 0.5
-           then mLow
-           else (if fraction > 0.5
-                 then mHigh
-                 else (match r with
-                       | RoundingMode.halfEven => if mLow % 2 == 0
-                                                  then mLow
-                                                  else mHigh
-                       | _ => (if mLow % 2 == 0
-                                 then mLow
-                                 else mHigh)))
-
-def ReverseRoundingMode (r : RoundingMode) : RoundingMode :=
-  match r with
-  | RoundingMode.ceil => RoundingMode.floor
-  | RoundingMode.floor => RoundingMode.ceil
-  | _ => r
-
 instance : Neg SuitableRationals where
   neg x := ⟨-x.val, negationPreservesSuitability x.val x.property⟩
 
@@ -118,10 +81,8 @@ def Decimal128Negate (x : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.NegZero => Decimal128Value.PosZero
   | Decimal128Value.Rational x => Decimal128Value.Rational (-x)
 
-#eval (Rat.mk' 1 2) ^ 4
-
 def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
-  if z: v == 0
+  if z: v = 0
   then Decimal128Value.PosZero
   else if n: v < 0
   then
@@ -134,17 +95,20 @@ def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
     | _ => Decimal128Value.NaN
   else
     have positive : v > 0 := by sorry
+    let vPos : PositiveRational := ⟨v, positive⟩
     match rationalExponent v with
     | none => Decimal128Value.NaN
     | some e =>
-      let te : Int := max (e - 33) (0 - 6176)
+      let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
       let m : Rat := v * (rat10 ^ (0 - te))
-      let rounded := ApplyRoundingModeToPositive v r
+      let rounded := ApplyRoundingModeToPositive vPos r
       if rounded = 0
       then Decimal128Value.PosZero
-      else if rounded = 10 ^ 34
+      else if rounded = 10 ^ maxSignificantDigits
       then Decimal128Value.PosInfinity
-      else Decimal128Value.Rational ⟨rounded * (10 ^ te), sorry⟩
+      else
+        have suitable : isRationalSuitable rounded := by sorry
+      Decimal128Value.Rational ⟨rounded * (10 ^ te), suitable⟩
 
 def add (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   match x, y with
