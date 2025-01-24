@@ -79,6 +79,19 @@ def Decimal128Negate (x : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.NegZero => Decimal128Value.PosZero
   | Decimal128Value.Rational x => Decimal128Value.Rational (-x)
 
+theorem ratTrichotomy (x : Rat) : x < 0 ∨ x = 0 ∨ x > 0 :=
+  by sorry
+
+theorem fooTheorem (x : Rat) : x ≠ 0 ∧ ¬(x < 0) → x > 0 :=
+  by
+  intro h
+  obtain ⟨nonZero, nonNegative⟩ := h
+  cases ratTrichotomy x with
+  | inl h1 => contradiction
+  | inr h2 => cases h2 with
+    | inl h3 => contradiction
+    | inr h4 => assumption
+
 def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
   if z: v = 0
   then Decimal128Value.PosZero
@@ -92,9 +105,8 @@ def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
     | Decimal128Value.Rational q => Decimal128Value.Rational (-q)
     | _ => Decimal128Value.NaN
   else
-    have positive : v > 0 := by
-      rw [←not_lt] at n
-      exact
+    have positive: v > 0 := by
+      apply fooTheorem v ⟨z, n⟩
     let vPos : PositiveRational := ⟨v, positive⟩
     match rationalExponent v with
     | some e =>
@@ -107,8 +119,8 @@ def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
         then Decimal128Value.PosInfinity
         else
           let x : Rat := rounded * (10 ^ te)
-          have suitable : isRationalSuitable x := by sorry
-          let y : SuitableRationals := (x, suitable)
+          have suitable: isRationalSuitable x := by sorry
+          let y : SuitableRationals := ⟨x, suitable⟩
           Decimal128Value.Rational y
     | _ => Decimal128Value.NaN
 
