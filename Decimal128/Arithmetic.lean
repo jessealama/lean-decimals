@@ -95,3 +95,13 @@ def divide (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.PosZero, _ => if isNegative y then Decimal128Value.NegZero else Decimal128Value.PosZero
   | Decimal128Value.NegZero, _ => if isNegative y then Decimal128Value.PosZero else Decimal128Value.NegZero
   | Decimal128Value.Rational x, Decimal128Value.Rational y => RoundToDecimal128Domain (x.val / y.val) RoundingMode.halfEven
+
+-- it should be possible for n to be positive or negative infinity, or even NaN
+def scale10 (x : Decimal128Value) (n : Int) : Decimal128Value :=
+  match x with
+  | Decimal128Value.NaN => Decimal128Value.NaN
+  | Decimal128Value.NegInfinity => Decimal128Value.NegInfinity
+  | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
+  | Decimal128Value.PosZero => Decimal128Value.PosZero
+  | Decimal128Value.NegZero => Decimal128Value.NegZero
+  | Decimal128Value.Rational x => RoundToDecimal128Domain (x.val * (10 ^ n)) RoundingMode.halfEven

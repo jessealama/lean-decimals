@@ -74,7 +74,6 @@ def lessThanOrEqual (x : Decimal128Value) (y : Decimal128Value) : Bool :=
   | Decimal128Value.Rational x, Decimal128Value.NegZero => x.val ≤ 0
   | Decimal128Value.Rational x, Decimal128Value.Rational y => x.val ≤ y.val
 
-
 def greaterThan (x : Decimal128Value) (y : Decimal128Value) : Bool :=
   match x, y with
   | Decimal128Value.NaN, _ => false

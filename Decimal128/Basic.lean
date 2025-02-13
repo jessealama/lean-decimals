@@ -1,13 +1,12 @@
 import Mathlib
 import Decimal128.Constants
-import Decimal128.Util
 import Decimal128.Round
 
-def maxCohortValue : Rat := scale10 maxSignificantDigits
+def maxCohortValue : Rat := 10 ^ maxSignificantDigits
 
 def isRationalSuitable (v : Rat) : Prop :=
   ∃ q : Int,
-  Rat.isInt (|v| * (scale10 (0 - q)))
+  Rat.isInt (|v| * (10 ^ (0 - q)))
   ∧ |v| > 0
   ∧ |v| < maxCohortValue
 
