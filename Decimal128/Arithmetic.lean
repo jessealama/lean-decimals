@@ -121,6 +121,11 @@ def scale10 (x : Decimal128Value) (n : Int) : Decimal128Value :=
   | Decimal128Value.NegZero => Decimal128Value.NegZero
   | Decimal128Value.Rational x => RoundToDecimal128Domain (x.val * (10 ^ n)) RoundingMode.halfEven
 
+private def truncate (x : Rat) : Rat :=
+  if x < 0
+  then 0 - Rat.floor (0 - x)
+  else Rat.floor x
+
 def remainder (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   match x, y with
   | Decimal128Value.NaN, _ => Decimal128Value.NaN
@@ -134,7 +139,7 @@ def remainder (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.PosZero, x => x
   | Decimal128Value.NegZero, x => x
   | Decimal128Value.Rational x, Decimal128Value.Rational y =>
-    let q : Rat := x.val / y.val
+    let q : Rat := truncate (x.val / y.val)
     let r : Rat := x.val - (y.val * q)
     if r == 0 && x.val < 0
     then Decimal128Value.NegZero
