@@ -83,24 +83,6 @@ theorem abs_neg_pos (x : Rat) : x < 0 → |x| > 0 := by
   have h1 := abs_pos_of_neg h
   exact h1
 
-def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : Decimal128Value :=
-    let v' : Rat := v.1
-    match rationalExponent v' with
-    | some e =>
-        let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
-        let m : Rat := v' * (rat10 ^ (0 - te))
-        let rounded := ApplyRoundingModeToPositive v r
-        if rounded = 0
-        then Decimal128Value.PosZero
-        else if rounded = 10 ^ maxSignificantDigits
-        then Decimal128Value.PosInfinity
-        else
-          let x : Rat := rounded * (10 ^ te)
-          have suitable: isRationalSuitable x := by sorry
-          let y : SuitableRationals := ⟨x, suitable⟩
-          Decimal128Value.Rational y
-    | _ => Decimal128Value.NaN
-
 inductive RoundingMode where
   | ceil : RoundingMode
   | floor : RoundingMode
@@ -129,6 +111,24 @@ def ApplyRoundingModeToPositive (m : PositiveRational) (r : RoundingMode) : Int 
                        | _ => (if mLow % 2 == 0
                                  then mLow
                                  else mHigh)))
+
+def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : Decimal128Value :=
+    let v' : Rat := v.1
+    match rationalExponent v' with
+    | some e =>
+        let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
+        let m : Rat := v' * (rat10 ^ (0 - te))
+        let rounded := ApplyRoundingModeToPositive v r
+        if rounded = 0
+        then Decimal128Value.PosZero
+        else if rounded = 10 ^ maxSignificantDigits
+        then Decimal128Value.PosInfinity
+        else
+          let x : Rat := rounded * (10 ^ te)
+          have suitable: isRationalSuitable x := by sorry
+          let y : SuitableRationals := ⟨x, suitable⟩
+          Decimal128Value.Rational y
+    | _ => Decimal128Value.NaN
 
 def ReverseRoundingMode (r : RoundingMode) : RoundingMode :=
   match r with

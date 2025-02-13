@@ -14,6 +14,9 @@ def equals (x : Decimal128Value) (y : Decimal128Value) : Bool :=
   | Decimal128Value.Rational x, Decimal128Value.Rational y => x.val = y.val
   | _, _ => false
 
+instance : BEq Decimal128Value where
+  beq := equals
+
 def notEquals (x : Decimal128Value) (y : Decimal128Value) : Bool :=
   match x, y with
   | Decimal128Value.NaN, _ => false
@@ -51,6 +54,9 @@ def lessThan (x : Decimal128Value) (y : Decimal128Value) : Bool :=
   | Decimal128Value.Rational x, Decimal128Value.NegZero => x.val < 0
   | Decimal128Value.Rational x, Decimal128Value.Rational y => x.val < y.val
 
+instance : LT Decimal128Value where
+  lt x y := lessThan x y
+
 def lessThanOrEqual (x : Decimal128Value) (y : Decimal128Value) : Bool :=
   match x, y with
   | Decimal128Value.NaN, _ => false
@@ -73,6 +79,9 @@ def lessThanOrEqual (x : Decimal128Value) (y : Decimal128Value) : Bool :=
   | Decimal128Value.Rational x, Decimal128Value.PosZero => x.val ≤ 0
   | Decimal128Value.Rational x, Decimal128Value.NegZero => x.val ≤ 0
   | Decimal128Value.Rational x, Decimal128Value.Rational y => x.val ≤ y.val
+
+  instance : LE Decimal128Value where
+    le x y := lessThanOrEqual x y
 
 def greaterThan (x : Decimal128Value) (y : Decimal128Value) : Bool :=
   match x, y with

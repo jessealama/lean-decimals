@@ -21,6 +21,9 @@ def negate (x : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.NegZero => Decimal128Value.PosZero
   | Decimal128Value.Rational x => Decimal128Value.Rational (-x)
 
+instance : Neg Decimal128Value where
+  neg x := negate x
+
 def add (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   match x, y with
   | Decimal128Value.NaN, _ => Decimal128Value.NaN
@@ -38,6 +41,9 @@ def add (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.NegZero, _ => y
   | _, Decimal128Value.NegZero => x
   | Decimal128Value.Rational x, Decimal128Value.Rational y => RoundToDecimal128Domain (x.val + y.val) RoundingMode.halfEven
+
+  instance : HAdd Decimal128Value Decimal128Value Decimal128Value where
+    hAdd := add
 
 def sub (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   match x, y with
@@ -59,6 +65,9 @@ def sub (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | _, Decimal128Value.NegZero => x
   | Decimal128Value.Rational x, Decimal128Value.Rational y => RoundToDecimal128Domain (x.val - y.val) RoundingMode.halfEven
 
+instance : HSub Decimal128Value Decimal128Value Decimal128Value where
+  hSub := sub
+
 def multiply (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   match x, y with
   | Decimal128Value.NaN, _ => Decimal128Value.NaN
@@ -73,6 +82,9 @@ def multiply (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.NegZero, Decimal128Value.Rational _ => Decimal128Value.PosZero
   | Decimal128Value.Rational _, Decimal128Value.NegZero => Decimal128Value.PosZero
   | Decimal128Value.Rational x, Decimal128Value.Rational y => RoundToDecimal128Domain (x.val * y.val) RoundingMode.halfEven
+
+instance : HMul Decimal128Value Decimal128Value Decimal128Value where
+  hMul := multiply
 
 def divide (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   match x, y with
@@ -95,6 +107,9 @@ def divide (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.PosZero, _ => if isNegative y then Decimal128Value.NegZero else Decimal128Value.PosZero
   | Decimal128Value.NegZero, _ => if isNegative y then Decimal128Value.PosZero else Decimal128Value.NegZero
   | Decimal128Value.Rational x, Decimal128Value.Rational y => RoundToDecimal128Domain (x.val / y.val) RoundingMode.halfEven
+
+instance : HDiv Decimal128Value Decimal128Value Decimal128Value where
+  hDiv := divide
 
 -- it should be possible for n to be positive or negative infinity, or even NaN
 def scale10 (x : Decimal128Value) (n : Int) : Decimal128Value :=
@@ -124,3 +139,6 @@ def remainder (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
     if r == 0 && x.val < 0
     then Decimal128Value.NegZero
     else RoundToDecimal128Domain r RoundingMode.halfEven
+
+instance : HMod Decimal128Value Decimal128Value Decimal128Value where
+  hMod := remainder
