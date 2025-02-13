@@ -147,3 +147,28 @@ def remainder (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
 
 instance : HMod Decimal128Value Decimal128Value Decimal128Value where
   hMod := remainder
+
+def exponent (x : Decimal128Value) : Float :=
+  match x with
+  | Decimal128Value.NaN => Float.nan
+  | Decimal128Value.NegInfinity => Float.inf
+  | Decimal128Value.PosInfinity => Float.inf
+  | Decimal128Value.PosZero => -Float.inf
+  | Decimal128Value.NegZero => -Float.inf
+  | Decimal128Value.Rational x =>
+    have _ : isRationalSuitable x.val := x.property
+    let e : Int := rationalExponent x.val |>.get!
+    Float.ofInt e
+
+def mantissa (x : Decimal128Value) : Decimal128Value
+  match x with
+  | Decimal128Value.NaN => Decimal128Value.NaN
+  | Decimal128Value.NegInfinity => Decimal128Value.PosInfinity
+  | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
+  | Decimal128Value.PosZero => Decimal128Value.PosZero
+  | Decimal128Value.NegZero => Decimal128Value.NegZero
+  | Decimal128Value.Rational x =>
+    have suitable : isRationalSuitable x.val := x.property
+    let s : Rat := rationalSignificand x.val |>.get!
+    have suitableAgain : isRationalSuitable s
+    Decimal128Value.Rational ⟨s, suitableAgain⟩
