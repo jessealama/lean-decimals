@@ -73,3 +73,17 @@ def greaterThan (x : Decimal128Value) (y : Decimal128Value) : Bool :=
   | Decimal128Value.Rational x, Decimal128Value.PosZero => x.val > 0
   | Decimal128Value.Rational x, Decimal128Value.NegZero => x.val > 0
   | Decimal128Value.Rational x, Decimal128Value.Rational y => x.val > y.val
+
+inductive CmpResult where
+  | NaN : CmpResult
+  | lessThan : CmpResult
+  | equal : CmpResult
+  | greaterThan : CmpResult
+
+  def compare (x : Decimal128Value) (y : Decimal128Value) : CmpResult :=
+    match x, y with
+    | Decimal128Value.NaN, _ => CmpResult.NaN
+    | _, Decimal128Value.NaN => CmpResult.NaN
+    | _, _ => if equals x y then CmpResult.equal
+              else if lessThan x y then CmpResult.lessThan
+              else CmpResult.greaterThan
