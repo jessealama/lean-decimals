@@ -1,6 +1,5 @@
 import Mathlib
 import Decimal128.Basic
-import Decimal128.Round
 import Decimal128.Predicates
 
 def absoluteValue (x : Decimal128Value) : Decimal128Value :=
