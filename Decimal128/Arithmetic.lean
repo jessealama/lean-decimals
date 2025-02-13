@@ -105,3 +105,22 @@ def scale10 (x : Decimal128Value) (n : Int) : Decimal128Value :=
   | Decimal128Value.PosZero => Decimal128Value.PosZero
   | Decimal128Value.NegZero => Decimal128Value.NegZero
   | Decimal128Value.Rational x => RoundToDecimal128Domain (x.val * (10 ^ n)) RoundingMode.halfEven
+
+def remainder (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
+  match x, y with
+  | Decimal128Value.NaN, _ => Decimal128Value.NaN
+  | _, Decimal128Value.NaN => Decimal128Value.NaN
+  | Decimal128Value.PosInfinity, _ => Decimal128Value.NaN
+  | Decimal128Value.NegInfinity, _ => Decimal128Value.NaN
+  | _, Decimal128Value.PosInfinity => x
+  | _, Decimal128Value.NegInfinity => x
+  | _, Decimal128Value.PosZero => Decimal128Value.NaN
+  | _, Decimal128Value.NegZero => Decimal128Value.NaN
+  | Decimal128Value.PosZero, x => x
+  | Decimal128Value.NegZero, x => x
+  | Decimal128Value.Rational x, Decimal128Value.Rational y =>
+    let q : Rat := x.val / y.val
+    let r : Rat := x.val - (y.val * q)
+    if r == 0 && x.val < 0
+    then Decimal128Value.NegZero
+    else RoundToDecimal128Domain r RoundingMode.halfEven
