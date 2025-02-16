@@ -42,18 +42,12 @@ def mathematicalValue (x : Decimal128Value) : Option Rat :=
   | Decimal128Value.Rational ⟨q, _⟩ => some q
   | _ => none
 
-def rationalExponentAndSignificand (x : Rat) : Option (Int × Rat) :=
-  some (0, x)
+def rationalExponent (q : Rat) : Int :=
+  if q < 0
+  then Int.log 10 (-q)
+  else Int.log 10 q
 
-def rationalExponent (x : Rat) : Option Int :=
-  match rationalExponentAndSignificand x with
-  | none => none
-  | some (e, _) => e
-
-def rationalSignificand (x : Rat) : Option Rat :=
-  match rationalExponentAndSignificand x with
-  | none => none
-  | some (_, s) => s
+#eval rationalExponent 0.03
 
 theorem ratTrichotomy (x : Rat) : x < 0 ∨ x = 0 ∨ x > 0 := by
   have h := le_total x 0
@@ -115,7 +109,7 @@ def ApplyRoundingModeToPositive (m : PositiveRational) (r : RoundingMode) : Int 
 def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : Decimal128Value :=
     let v' : Rat := v.1
     match rationalExponent v' with
-    | some e =>
+    | e =>
         let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
         let m : Rat := v' * (rat10 ^ (0 - te))
         let rounded := ApplyRoundingModeToPositive v r
@@ -128,14 +122,12 @@ def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : 
           have suitable: isRationalSuitable x := by sorry
           let y : SuitableRationals := ⟨x, suitable⟩
           Decimal128Value.Rational y
-    | _ => Decimal128Value.NaN
 
 def ReverseRoundingMode (r : RoundingMode) : RoundingMode :=
   match r with
   | RoundingMode.ceil => RoundingMode.floor
   | RoundingMode.floor => RoundingMode.ceil
   | _ => r
-
 
 def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
   if z: v = 0

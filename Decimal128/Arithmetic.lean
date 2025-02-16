@@ -156,18 +156,33 @@ def exponent (x : Decimal128Value) : Float :=
   | Decimal128Value.NegZero => -Float.inf
   | Decimal128Value.Rational x =>
     have _ : isRationalSuitable x.val := x.property
-    let e : Int := rationalExponent x.val |>.get!
+    let e : Int := rationalExponent x.val
     Float.ofInt e
 
-def mantissa (x : Decimal128Value) : Decimal128Value
+private def fooMeasure (q : Rat) : Nat :=
+  Int.natAbs (Int.log 10 |q|)
+
+private def rationalSignificand (q : Rat) : Rat :=
+  let re : Int := rationalExponent q
+  let e : Nat := Int.natAbs re
+  q / (10 ^ (e + 1))
+
+#eval rationalSignificand 11.4
+
+lemma significandPreservesSuitability (q : Rat) :
+  isRationalSuitable q → isRationalSuitable (rationalSignificand q)
+  := by
+  sorry
+
+def mantissa (x : Decimal128Value) : Decimal128Value :=
   match x with
   | Decimal128Value.NaN => Decimal128Value.NaN
   | Decimal128Value.NegInfinity => Decimal128Value.PosInfinity
   | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
   | Decimal128Value.PosZero => Decimal128Value.PosZero
   | Decimal128Value.NegZero => Decimal128Value.NegZero
-  | Decimal128Value.Rational x =>
-    have suitable : isRationalSuitable x.val := x.property
-    let s : Rat := rationalSignificand x.val |>.get!
-    have suitableAgain : isRationalSuitable s
-    Decimal128Value.Rational ⟨s, suitableAgain⟩
+  | Decimal128Value.Rational ⟨q, p⟩ =>
+    let s : Rat := rationalSignificand q
+    have suitable : isRationalSuitable s := by
+      apply significandPreservesSuitability q p
+    Decimal128Value.Rational ⟨s, suitable⟩
