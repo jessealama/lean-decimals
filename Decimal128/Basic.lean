@@ -123,19 +123,18 @@ def isDenormalized (x : Decimal128Value) : Option Bool :=
 def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : Decimal128Value :=
     let v' : Rat := v.1
     let rounded := ApplyRoundingModeToPositive v r
-    match rationalExponent v' with
-    | e =>
-        let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
-        let m : Rat := v' * (rat10 ^ (0 - te))
-        if rounded = 0
-        then Decimal128Value.PosZero
-        else if rounded = 10 ^ maxSignificantDigits
-        then Decimal128Value.PosInfinity
-        else
-          let x : Rat := rounded * (10 ^ te)
-          have suitable: isRationalSuitable x := by sorry
-          let y : SuitableRationals := ⟨x, suitable⟩
-          Decimal128Value.Rational y
+    let e := rationalExponent v'
+    let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
+    let m : Rat := v' * (rat10 ^ (0 - te))
+    if rounded = 0
+    then Decimal128Value.PosZero
+    else if rounded = 10 ^ maxSignificantDigits
+    then Decimal128Value.PosInfinity
+    else
+      let x : Rat := rounded * (10 ^ te)
+      have suitable: isRationalSuitable x := by sorry
+      let y : SuitableRationals := ⟨x, suitable⟩
+      Decimal128Value.Rational y
 
 def ReverseRoundingMode (r : RoundingMode) : RoundingMode :=
   match r with
