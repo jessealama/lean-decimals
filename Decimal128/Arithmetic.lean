@@ -165,9 +165,9 @@ private def fooMeasure (q : Rat) : Nat :=
 private def rationalSignificand (q : Rat) : Rat :=
   let re : Int := rationalExponent q
   let e : Nat := Int.natAbs re
-  q / (10 ^ (e + 1))
+  q / (10 ^ e)
 
-#eval rationalSignificand 11.4
+#eval rationalSignificand 10.4
 
 lemma significandPreservesSuitability (q : Rat) :
   isRationalSuitable q → isRationalSuitable (rationalSignificand q)
