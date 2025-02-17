@@ -174,6 +174,10 @@ lemma significandPreservesSuitability (q : Rat) :
   := by
   sorry
 
+lemma mantissaRepresentation (q : Rat) :
+  q = (rationalSignificand q) * (10 ^ (rationalExponent q)) := by
+  sorry
+
 def mantissa (x : Decimal128Value) : Decimal128Value :=
   match x with
   | Decimal128Value.NaN => Decimal128Value.NaN
