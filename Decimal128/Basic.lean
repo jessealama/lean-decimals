@@ -106,13 +106,27 @@ def ApplyRoundingModeToPositive (m : PositiveRational) (r : RoundingMode) : Int 
                                  then mLow
                                  else mHigh)))
 
+def isNormalized (x : Decimal128Value) : Option Bool :=
+  match x with
+  | Decimal128Value.Rational ⟨q, _⟩ =>
+    let e := rationalExponent q
+    e ≤ maxNormalizedExponent && minNormalizedExponent ≤ e
+  | _ => none
+
+def isDenormalized (x : Decimal128Value) : Option Bool :=
+  match x with
+  | Decimal128Value.Rational ⟨q, _⟩ =>
+    let e := rationalExponent q
+    e ≤ minDenomalizedExponent && maxDenomalizedExponent ≤ e
+  | _ => none
+
 def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : Decimal128Value :=
     let v' : Rat := v.1
+    let rounded := ApplyRoundingModeToPositive v r
     match rationalExponent v' with
     | e =>
         let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
         let m : Rat := v' * (rat10 ^ (0 - te))
-        let rounded := ApplyRoundingModeToPositive v r
         if rounded = 0
         then Decimal128Value.PosZero
         else if rounded = 10 ^ maxSignificantDigits

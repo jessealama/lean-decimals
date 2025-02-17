@@ -1,6 +1,8 @@
 import Mathlib
 
 def maxSignificantDigits : Nat := 34
+def maxNormalizedExponent : Int := 6144
+def minNormalizedExponent : Int := -6143
 def minDenomalizedExponent : Int := -6176
 def maxDenomalizedExponent : Int := -6144
 
