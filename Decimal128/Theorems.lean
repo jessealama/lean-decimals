@@ -76,3 +76,17 @@ theorem scale10Correct (p : Rat) (n : Nat) :
           n
   = Decimal128Value.Rational ⟨p ^ (10 * n), s2⟩
 := by sorry
+
+theorem exponentCorrect (p : Rat) :
+  isRationalSuitable p
+  → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable (rationalExponent p)),
+    exponent (Decimal128Value.Rational ⟨p, s1⟩)
+    = Decimal128Value.Rational ⟨rationalExponent p, s2⟩
+:= by sorry
+
+theorem mantissaCorrect (p : Rat) :
+  isRationalSuitable p
+  → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable (rationalSignificand p)),
+    exponent (Decimal128Value.Rational ⟨p, s1⟩)
+    = Decimal128Value.Rational ⟨rationalSignificand p, s2⟩
+:= by sorry
