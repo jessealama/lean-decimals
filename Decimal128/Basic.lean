@@ -106,6 +106,31 @@ def ApplyRoundingModeToPositive (m : PositiveRational) (r : RoundingMode) : Int 
                                  then mLow
                                  else mHigh)))
 
+def isZero (x : Decimal128Value) : Bool :=
+  match x with
+  | Decimal128Value.PosZero => true
+  | Decimal128Value.NegZero => true
+  | _ => false
+
+def isNegative (x : Decimal128Value) : Bool :=
+  match x with
+  | Decimal128Value.NegInfinity => true
+  | Decimal128Value.NegZero => true
+  | Decimal128Value.Rational ⟨q, _⟩ => q < 0
+  | _ => false
+
+def isFinite (x : Decimal128Value) : Bool :=
+  match x with
+  | Decimal128Value.NaN => false
+  | Decimal128Value.NegInfinity => false
+  | Decimal128Value.PosInfinity => false
+  | _ => true
+
+def isNaN (x : Decimal128Value) : Bool :=
+  match x with
+  | Decimal128Value.NaN => true
+  | _ => false
+
 def isNormalized (x : Decimal128Value) : Option Bool :=
   match x with
   | Decimal128Value.Rational ⟨q, _⟩ =>
@@ -119,6 +144,42 @@ def isDenormalized (x : Decimal128Value) : Option Bool :=
     let e := rationalExponent q
     e ≤ minDenomalizedExponent && maxDenomalizedExponent ≤ e
   | _ => none
+
+def truncatedExponent (x : Decimal128Value) : Option Int :=
+  match x with
+  | Decimal128Value.NaN => none
+  | Decimal128Value.NegInfinity => none
+  | Decimal128Value.PosInfinity => none
+  | Decimal128Value.PosZero => minNormalizedExponent
+  | Decimal128Value.NegZero => minNormalizedExponent
+  | Decimal128Value.Rational ⟨q, _⟩ =>
+    let e := rationalExponent q
+    if e > maxDenomalizedExponent
+    then some e
+    else some minDenomalizedExponent
+
+def scaledSignificand (x : Decimal128Value) : Option Rat :=
+  match x with
+  | Decimal128Value.NaN => none
+  | Decimal128Value.NegInfinity => none
+  | Decimal128Value.PosInfinity => none
+  | Decimal128Value.PosZero => some 0
+  | Decimal128Value.NegZero => some 0
+  | Decimal128Value.Rational ⟨q, _⟩ =>
+    match truncatedExponent x with
+    | none => none
+    | some te =>
+      let exp : Int := maxSignificantDigits - 1 - te
+      some (q * (10 ^ exp))
+
+-- Note 5
+lemma noteFive (x : Decimal128Value) :
+  isFinite x → ∃ q : Rat,
+    Option.isSome (scaledSignificand x)
+    ∧ q = scaledSignificand x
+    ∧ Rat.isInt q
+    ∧ |q| < maxCohortValue
+  := by sorry
 
 def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : Decimal128Value :=
     let v' : Rat := v.1

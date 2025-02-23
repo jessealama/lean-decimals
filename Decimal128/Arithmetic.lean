@@ -1,6 +1,5 @@
 import Mathlib
 import Decimal128.Basic
-import Decimal128.Predicates
 
 def absoluteValue (x : Decimal128Value) : Decimal128Value :=
   match x with
@@ -39,7 +38,7 @@ def add (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | _, Decimal128Value.PosZero => x
   | Decimal128Value.NegZero, _ => y
   | _, Decimal128Value.NegZero => x
-  | Decimal128Value.Rational x, Decimal128Value.Rational y => RoundToDecimal128Domain (x.val + y.val) RoundingMode.halfEven
+  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ => RoundToDecimal128Domain (x.val + y.val) RoundingMode.halfEven
 
   instance : HAdd Decimal128Value Decimal128Value Decimal128Value where
     hAdd := add
@@ -158,9 +157,6 @@ def exponent (x : Decimal128Value) : Float :=
     have _ : isRationalSuitable x.val := x.property
     let e : Int := rationalExponent x.val
     Float.ofInt e
-
-private def fooMeasure (q : Rat) : Nat :=
-  Int.natAbs (Int.log 10 |q|)
 
 private def rationalSignificand (q : Rat) : Rat :=
   let re : Int := rationalExponent q
