@@ -146,19 +146,19 @@ def remainder (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
 instance : HMod Decimal128Value Decimal128Value Decimal128Value where
   hMod := remainder
 
-def exponent (x : Decimal128Value) : Float :=
+def exponent (x : Decimal128Value) : Decimal128Value :=
   match x with
-  | Decimal128Value.NaN => Float.nan
-  | Decimal128Value.NegInfinity => Float.inf
-  | Decimal128Value.PosInfinity => Float.inf
-  | Decimal128Value.PosZero => -Float.inf
-  | Decimal128Value.NegZero => -Float.inf
+  | Decimal128Value.NaN => Decimal128Value.NaN
+  | Decimal128Value.NegInfinity => Decimal128Value.PosInfinity
+  | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
+  | Decimal128Value.PosZero => Decimal128Value.NegInfinity
+  | Decimal128Value.NegZero => Decimal128Value.NegInfinity
   | Decimal128Value.Rational x =>
-    have _ : isRationalSuitable x.val := x.property
-    let e : Int := rationalExponent x.val
-    Float.ofInt e
+    let e := rationalExponent x.val
+    have suitable : isRationalSuitable e := by sorry
+    Decimal128Value.Rational ⟨e, suitable⟩
 
-private def rationalSignificand (q : Rat) : Rat :=
+def rationalSignificand (q : Rat) : Rat :=
   let re : Int := rationalExponent q
   let e : Nat := Int.natAbs re
   q / (10 ^ e)
