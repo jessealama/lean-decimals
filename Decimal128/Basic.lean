@@ -47,7 +47,7 @@ def rationalExponent (q : Rat) : Int :=
   then Int.log 10 (-q)
   else Int.log 10 q
 
-#eval rationalExponent 0.03
+#eval rationalExponent 13.1
 
 theorem ratTrichotomy (x : Rat) : x < 0 ∨ x = 0 ∨ x > 0 := by
   have h := le_total x 0
