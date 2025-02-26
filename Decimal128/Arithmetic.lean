@@ -33,7 +33,10 @@ def negate (x : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
   | Decimal128Value.PosZero => Decimal128Value.NegZero
   | Decimal128Value.NegZero => Decimal128Value.PosZero
-  | Decimal128Value.Rational x => Decimal128Value.Rational (-x)
+  | Decimal128Value.Rational ⟨q, s'⟩ =>
+    have s : isRationalSuitable (-q) := by
+      apply negationPreservesSuitability q s'
+    Decimal128Value.Rational ⟨-q, s⟩
 
 instance : Neg Decimal128Value where
   neg x := negate x
