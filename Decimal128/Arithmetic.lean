@@ -8,7 +8,10 @@ def absoluteValue (x : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
   | Decimal128Value.PosZero => Decimal128Value.PosZero
   | Decimal128Value.NegZero => Decimal128Value.PosZero
-  | Decimal128Value.Rational x => Decimal128Value.Rational ⟨|x.val|, sorry⟩
+  | Decimal128Value.Rational ⟨q, s'⟩ =>
+    have s : isRationalSuitable |q| := by
+      apply absoluteValuePreservesSuitability q s'
+    Decimal128Value.Rational ⟨|q|, s⟩
 
 def negate (x : Decimal128Value) : Decimal128Value :=
   match x with
