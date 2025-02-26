@@ -1,6 +1,19 @@
 import Mathlib
 import Decimal128.Basic
 
+theorem absoluteValuePreservesSuitability (v : Rat) :
+  isRationalSuitable v → isRationalSuitable |v|
+  := by
+  intro h
+  obtain ⟨q, h⟩ := h
+  obtain ⟨isInt, absPos, absNotTooBig⟩ := h
+  exists q
+  constructor
+  · rw [abs_abs, isInt]
+  · constructor
+    · simp [abs_abs, absPos]
+    · simp [abs_abs, absNotTooBig]
+
 def absoluteValue (x : Decimal128Value) : Decimal128Value :=
   match x with
   | Decimal128Value.NaN => Decimal128Value.NaN
@@ -41,7 +54,8 @@ def add (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | _, Decimal128Value.PosZero => x
   | Decimal128Value.NegZero, _ => y
   | _, Decimal128Value.NegZero => x
-  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ => RoundToDecimal128Domain (x.val + y.val) RoundingMode.halfEven
+  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ =>
+    RoundToDecimal128Domain (p + q) RoundingMode.halfEven
 
   instance : HAdd Decimal128Value Decimal128Value Decimal128Value where
     hAdd := add
@@ -64,7 +78,8 @@ def sub (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | _, Decimal128Value.PosZero => x
   | Decimal128Value.NegZero, _ => y
   | _, Decimal128Value.NegZero => x
-  | Decimal128Value.Rational x, Decimal128Value.Rational y => RoundToDecimal128Domain (x.val - y.val) RoundingMode.halfEven
+  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ =>
+    RoundToDecimal128Domain (p - q) RoundingMode.halfEven
 
 instance : HSub Decimal128Value Decimal128Value Decimal128Value where
   hSub := sub
@@ -82,7 +97,8 @@ def multiply (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | Decimal128Value.NegZero, Decimal128Value.NegZero => Decimal128Value.PosZero
   | Decimal128Value.NegZero, Decimal128Value.Rational _ => Decimal128Value.PosZero
   | Decimal128Value.Rational _, Decimal128Value.NegZero => Decimal128Value.PosZero
-  | Decimal128Value.Rational x, Decimal128Value.Rational y => RoundToDecimal128Domain (x.val * y.val) RoundingMode.halfEven
+  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ =>
+    RoundToDecimal128Domain (p * q) RoundingMode.halfEven
 
 instance : HMul Decimal128Value Decimal128Value Decimal128Value where
   hMul := multiply
@@ -107,7 +123,8 @@ def divide (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | _, Decimal128Value.NegZero => if isNegative x then Decimal128Value.PosInfinity else Decimal128Value.NegInfinity
   | Decimal128Value.PosZero, _ => if isNegative y then Decimal128Value.NegZero else Decimal128Value.PosZero
   | Decimal128Value.NegZero, _ => if isNegative y then Decimal128Value.PosZero else Decimal128Value.NegZero
-  | Decimal128Value.Rational x, Decimal128Value.Rational y => RoundToDecimal128Domain (x.val / y.val) RoundingMode.halfEven
+  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ =>
+    RoundToDecimal128Domain (p / q) RoundingMode.halfEven
 
 instance : HDiv Decimal128Value Decimal128Value Decimal128Value where
   hDiv := divide
@@ -120,7 +137,7 @@ def scale10 (x : Decimal128Value) (n : Int) : Decimal128Value :=
   | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
   | Decimal128Value.PosZero => Decimal128Value.PosZero
   | Decimal128Value.NegZero => Decimal128Value.NegZero
-  | Decimal128Value.Rational x => RoundToDecimal128Domain (x.val * (10 ^ n)) RoundingMode.halfEven
+  | Decimal128Value.Rational ⟨p, _⟩ => RoundToDecimal128Domain (p * (10 ^ n)) RoundingMode.halfEven
 
 private def truncate (x : Rat) : Rat :=
   if x < 0
@@ -139,10 +156,10 @@ def remainder (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
   | _, Decimal128Value.NegZero => Decimal128Value.NaN
   | Decimal128Value.PosZero, x => x
   | Decimal128Value.NegZero, x => x
-  | Decimal128Value.Rational x, Decimal128Value.Rational y =>
-    let q : Rat := truncate (x.val / y.val)
-    let r : Rat := x.val - (y.val * q)
-    if r == 0 && x.val < 0
+  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ =>
+    let q : Rat := truncate (p / q)
+    let r : Rat := p - (q * q)
+    if r == 0 && p < 0
     then Decimal128Value.NegZero
     else RoundToDecimal128Domain r RoundingMode.halfEven
 

@@ -9,19 +9,6 @@ def isRationalSuitable (v : Rat) : Prop :=
   ∧ |v| > 0
   ∧ |v| < maxCohortValue
 
-theorem absoluteValuePreservesSuitability (v : Rat) :
-  isRationalSuitable v → isRationalSuitable |v|
-  := by
-  intro h
-  obtain ⟨q, h⟩ := h
-  obtain ⟨isInt, absPos, absNotTooBig⟩ := h
-  exists q
-  constructor
-  · rw [abs_abs, isInt]
-  · constructor
-    · simp [abs_abs, absPos]
-    · simp [abs_abs, absNotTooBig]
-
 theorem negationPreservesSuitability (v : Rat) :
   isRationalSuitable v → isRationalSuitable (-v)
   := by
