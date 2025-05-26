@@ -3,13 +3,17 @@ import Decimal128.Basic
 import Decimal128.Arithmetic
 
 -- Proves that negating a suitable rational produces the expected result
-theorem negationCorrect (p : Rat) (q : Rat) :
+theorem negationCorrect (p : Rat) :
   isRationalSuitable p
 ∧ isRationalSuitable (-p)
 → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable (-p)),
   negate (DecimalValue.Rational ⟨p, s1⟩)
   = DecimalValue.Rational ⟨-p, s2⟩
-:= by sorry
+:= by
+  intro ⟨h1, h2⟩
+  use h1, h2
+  simp [negate]
+  rfl
 
 -- Proves that absolute value of a suitable rational produces the expected result
 theorem absoluteValueCorrect (p : Rat) (q : Rat) :
