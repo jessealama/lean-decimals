@@ -16,13 +16,17 @@ theorem negationCorrect (p : Rat) :
   rfl
 
 -- Proves that absolute value of a suitable rational produces the expected result
-theorem absoluteValueCorrect (p : Rat) (q : Rat) :
+theorem absoluteValueCorrect (p : Rat) :
   isRationalSuitable p
 ∧ isRationalSuitable |p|
 → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable |p|),
   absoluteValue (DecimalValue.Rational ⟨p, s1⟩)
   = DecimalValue.Rational ⟨|p|, s2⟩
-:= by sorry
+:= by
+  intro ⟨h1, h2⟩
+  use h1, h2
+  simp [absoluteValue]
+  rfl
 
 -- Proves that adding two suitable rationals produces the expected result
 theorem additionCorrect (p : Rat) (q : Rat) :
