@@ -14,172 +14,173 @@ theorem absoluteValuePreservesSuitability (v : Rat) :
     · simp [abs_abs, absPos]
     · simp [abs_abs, absNotTooBig]
 
-def absoluteValue (x : Decimal128Value) : Decimal128Value :=
+def absoluteValue (x : DecimalValue) : DecimalValue :=
   match x with
-  | Decimal128Value.NaN => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosZero => Decimal128Value.PosZero
-  | Decimal128Value.NegZero => Decimal128Value.PosZero
-  | Decimal128Value.Rational ⟨q, s'⟩ =>
+  | DecimalValue.NaN => DecimalValue.NaN
+  | DecimalValue.NegInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosZero => DecimalValue.PosZero
+  | DecimalValue.NegZero => DecimalValue.PosZero
+  | DecimalValue.Rational ⟨q, s'⟩ =>
     have s : isRationalSuitable |q| := by
       apply absoluteValuePreservesSuitability q s'
-    Decimal128Value.Rational ⟨|q|, s⟩
+    DecimalValue.Rational ⟨|q|, s⟩
 
-def negate (x : Decimal128Value) : Decimal128Value :=
+def negate (x : DecimalValue) : DecimalValue :=
   match x with
-  | Decimal128Value.NaN => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosZero => Decimal128Value.NegZero
-  | Decimal128Value.NegZero => Decimal128Value.PosZero
-  | Decimal128Value.Rational ⟨q, s'⟩ =>
+  | DecimalValue.NaN => DecimalValue.NaN
+  | DecimalValue.NegInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosZero => DecimalValue.NegZero
+  | DecimalValue.NegZero => DecimalValue.PosZero
+  | DecimalValue.Rational ⟨q, s'⟩ =>
     have s : isRationalSuitable (-q) := by
       apply negationPreservesSuitability q s'
-    Decimal128Value.Rational ⟨-q, s⟩
+    DecimalValue.Rational ⟨-q, s⟩
 
-instance : Neg Decimal128Value where
+instance : Neg DecimalValue where
   neg x := negate x
 
-def add (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
+def add (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   match x, y with
-  | Decimal128Value.NaN, _ => Decimal128Value.NaN
-  | _, Decimal128Value.NaN => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity, Decimal128Value.PosInfinity => Decimal128Value.NaN
-  | Decimal128Value.PosInfinity, Decimal128Value.NegInfinity => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity, _ => Decimal128Value.NegInfinity
-  | _, Decimal128Value.NegInfinity => Decimal128Value.NegInfinity
-  | Decimal128Value.PosInfinity, _ => Decimal128Value.PosInfinity
-  | _, Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosZero, Decimal128Value.NegZero => Decimal128Value.PosZero
-  | Decimal128Value.NegZero, Decimal128Value.PosZero => Decimal128Value.PosZero
-  | Decimal128Value.PosZero, _ => y
-  | _, Decimal128Value.PosZero => x
-  | Decimal128Value.NegZero, _ => y
-  | _, Decimal128Value.NegZero => x
-  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ =>
+  | DecimalValue.NaN, _ => DecimalValue.NaN
+  | _, DecimalValue.NaN => DecimalValue.NaN
+  | DecimalValue.NegInfinity, DecimalValue.PosInfinity => DecimalValue.NaN
+  | DecimalValue.PosInfinity, DecimalValue.NegInfinity => DecimalValue.NaN
+  | DecimalValue.NegInfinity, _ => DecimalValue.NegInfinity
+  | _, DecimalValue.NegInfinity => DecimalValue.NegInfinity
+  | DecimalValue.PosInfinity, _ => DecimalValue.PosInfinity
+  | _, DecimalValue.PosInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosZero, DecimalValue.NegZero => DecimalValue.PosZero
+  | DecimalValue.NegZero, DecimalValue.PosZero => DecimalValue.PosZero
+  | DecimalValue.PosZero, _ => y
+  | _, DecimalValue.PosZero => x
+  | DecimalValue.NegZero, _ => y
+  | _, DecimalValue.NegZero => x
+  | DecimalValue.Rational ⟨p, _⟩, DecimalValue.Rational ⟨q, _⟩ =>
     RoundToDecimal128Domain (p + q) RoundingMode.halfEven
 
-  instance : HAdd Decimal128Value Decimal128Value Decimal128Value where
+  instance : HAdd DecimalValue DecimalValue DecimalValue where
     hAdd := add
 
-def sub (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
+def sub (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   match x, y with
-  | Decimal128Value.NaN, _ => Decimal128Value.NaN
-  | _, Decimal128Value.NaN => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity, Decimal128Value.NegInfinity => Decimal128Value.NaN
-  | Decimal128Value.PosInfinity, Decimal128Value.PosInfinity => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity, _ => Decimal128Value.NegInfinity
-  | _, Decimal128Value.NegInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosInfinity, _ => Decimal128Value.PosInfinity
-  | _, Decimal128Value.PosInfinity => Decimal128Value.NegInfinity
-  | Decimal128Value.PosZero, Decimal128Value.PosZero => Decimal128Value.PosZero
-  | Decimal128Value.NegZero, Decimal128Value.NegZero => Decimal128Value.PosZero
-  | Decimal128Value.PosZero, Decimal128Value.NegZero => Decimal128Value.PosZero
-  | Decimal128Value.NegZero, Decimal128Value.PosZero => Decimal128Value.NegZero
-  | Decimal128Value.PosZero, _ => y
-  | _, Decimal128Value.PosZero => x
-  | Decimal128Value.NegZero, _ => y
-  | _, Decimal128Value.NegZero => x
-  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ =>
+  | DecimalValue.NaN, _ => DecimalValue.NaN
+  | _, DecimalValue.NaN => DecimalValue.NaN
+  | DecimalValue.NegInfinity, DecimalValue.NegInfinity => DecimalValue.NaN
+  | DecimalValue.PosInfinity, DecimalValue.PosInfinity => DecimalValue.NaN
+  | DecimalValue.NegInfinity, _ => DecimalValue.NegInfinity
+  | _, DecimalValue.NegInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosInfinity, _ => DecimalValue.PosInfinity
+  | _, DecimalValue.PosInfinity => DecimalValue.NegInfinity
+  | DecimalValue.PosZero, DecimalValue.PosZero => DecimalValue.PosZero
+  | DecimalValue.NegZero, DecimalValue.NegZero => DecimalValue.PosZero
+  | DecimalValue.PosZero, DecimalValue.NegZero => DecimalValue.PosZero
+  | DecimalValue.NegZero, DecimalValue.PosZero => DecimalValue.NegZero
+  | DecimalValue.PosZero, _ => y
+  | _, DecimalValue.PosZero => x
+  | DecimalValue.NegZero, _ => y
+  | _, DecimalValue.NegZero => x
+  | DecimalValue.Rational ⟨p, _⟩, DecimalValue.Rational ⟨q, _⟩ =>
     RoundToDecimal128Domain (p - q) RoundingMode.halfEven
 
-instance : HSub Decimal128Value Decimal128Value Decimal128Value where
+instance : HSub DecimalValue DecimalValue DecimalValue where
   hSub := sub
 
-def multiply (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
+def multiply (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   match x, y with
-  | Decimal128Value.NaN, _ => Decimal128Value.NaN
-  | _, Decimal128Value.NaN => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity, _ => if isZero y then Decimal128Value.NaN else Decimal128Value.NegInfinity
-  | _, Decimal128Value.NegInfinity => if isZero x then Decimal128Value.NaN else Decimal128Value.NegInfinity
-  | Decimal128Value.PosInfinity, _ => if isZero y then Decimal128Value.NaN else Decimal128Value.PosInfinity
-  | _, Decimal128Value.PosInfinity => if isZero x then Decimal128Value.NaN else Decimal128Value.PosInfinity
-  | Decimal128Value.PosZero, _ => Decimal128Value.PosZero
-  | _, Decimal128Value.PosZero => Decimal128Value.PosZero
-  | Decimal128Value.NegZero, Decimal128Value.NegZero => Decimal128Value.PosZero
-  | Decimal128Value.NegZero, Decimal128Value.Rational _ => Decimal128Value.PosZero
-  | Decimal128Value.Rational _, Decimal128Value.NegZero => Decimal128Value.PosZero
-  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ =>
+  | DecimalValue.NaN, _ => DecimalValue.NaN
+  | _, DecimalValue.NaN => DecimalValue.NaN
+  | DecimalValue.NegInfinity, _ => if isZero y then DecimalValue.NaN else DecimalValue.NegInfinity
+  | _, DecimalValue.NegInfinity => if isZero x then DecimalValue.NaN else DecimalValue.NegInfinity
+  | DecimalValue.PosInfinity, _ => if isZero y then DecimalValue.NaN else DecimalValue.PosInfinity
+  | _, DecimalValue.PosInfinity => if isZero x then DecimalValue.NaN else DecimalValue.PosInfinity
+  | DecimalValue.PosZero, _ => DecimalValue.PosZero
+  | _, DecimalValue.PosZero => DecimalValue.PosZero
+  | DecimalValue.NegZero, DecimalValue.NegZero => DecimalValue.PosZero
+  | DecimalValue.NegZero, DecimalValue.Rational _ => DecimalValue.PosZero
+  | DecimalValue.Rational _, DecimalValue.NegZero => DecimalValue.PosZero
+  | DecimalValue.Rational ⟨p, _⟩, DecimalValue.Rational ⟨q, _⟩ =>
     RoundToDecimal128Domain (p * q) RoundingMode.halfEven
 
-instance : HMul Decimal128Value Decimal128Value Decimal128Value where
+instance : HMul DecimalValue DecimalValue DecimalValue where
   hMul := multiply
 
-def divide (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
+def divide (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   match x, y with
-  | Decimal128Value.NaN, _ => Decimal128Value.NaN
-  | _, Decimal128Value.NaN => Decimal128Value.NaN
-  | Decimal128Value.PosInfinity, Decimal128Value.PosInfinity => Decimal128Value.NaN
-  | Decimal128Value.PosInfinity, Decimal128Value.NegInfinity => Decimal128Value.NaN
-  | Decimal128Value.PosInfinity, _ => if isNegative y then Decimal128Value.NegInfinity else Decimal128Value.PosInfinity
-  | Decimal128Value.NegInfinity, Decimal128Value.NegInfinity => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity, Decimal128Value.PosInfinity => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity, _ => if isNegative y then Decimal128Value.PosInfinity else Decimal128Value.NegInfinity
-  | _, Decimal128Value.PosInfinity => if isNegative x then Decimal128Value.NegZero else Decimal128Value.PosZero
-  | _, Decimal128Value.NegInfinity => if isNegative x then Decimal128Value.PosZero else Decimal128Value.NegZero
-  | Decimal128Value.PosZero, Decimal128Value.PosZero => Decimal128Value.NaN
-  | Decimal128Value.NegZero, Decimal128Value.PosZero => Decimal128Value.NaN
-  | _, Decimal128Value.PosZero => if isNegative x then Decimal128Value.NegInfinity else if isNegative x then Decimal128Value.NegInfinity else Decimal128Value.PosInfinity
-  | Decimal128Value.PosZero, Decimal128Value.NegZero => Decimal128Value.NaN
-  | Decimal128Value.NegZero, Decimal128Value.NegZero => Decimal128Value.NaN
-  | _, Decimal128Value.NegZero => if isNegative x then Decimal128Value.PosInfinity else Decimal128Value.NegInfinity
-  | Decimal128Value.PosZero, _ => if isNegative y then Decimal128Value.NegZero else Decimal128Value.PosZero
-  | Decimal128Value.NegZero, _ => if isNegative y then Decimal128Value.PosZero else Decimal128Value.NegZero
-  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ =>
+  | DecimalValue.NaN, _ => DecimalValue.NaN
+  | _, DecimalValue.NaN => DecimalValue.NaN
+  | DecimalValue.PosInfinity, DecimalValue.PosInfinity => DecimalValue.NaN
+  | DecimalValue.PosInfinity, DecimalValue.NegInfinity => DecimalValue.NaN
+  | DecimalValue.PosInfinity, _ => if isNegative y then DecimalValue.NegInfinity else DecimalValue.PosInfinity
+  | DecimalValue.NegInfinity, DecimalValue.NegInfinity => DecimalValue.NaN
+  | DecimalValue.NegInfinity, DecimalValue.PosInfinity => DecimalValue.NaN
+  | DecimalValue.NegInfinity, _ => if isNegative y then DecimalValue.PosInfinity else DecimalValue.NegInfinity
+  | _, DecimalValue.PosInfinity => if isNegative x then DecimalValue.NegZero else DecimalValue.PosZero
+  | _, DecimalValue.NegInfinity => if isNegative x then DecimalValue.PosZero else DecimalValue.NegZero
+  | DecimalValue.PosZero, DecimalValue.PosZero => DecimalValue.NaN
+  | DecimalValue.NegZero, DecimalValue.PosZero => DecimalValue.NaN
+  | _, DecimalValue.PosZero => if isNegative x then DecimalValue.NegInfinity else if isNegative x then DecimalValue.NegInfinity else DecimalValue.PosInfinity
+  | DecimalValue.PosZero, DecimalValue.NegZero => DecimalValue.NaN
+  | DecimalValue.NegZero, DecimalValue.NegZero => DecimalValue.NaN
+  | _, DecimalValue.NegZero => if isNegative x then DecimalValue.PosInfinity else DecimalValue.NegInfinity
+  | DecimalValue.PosZero, _ => if isNegative y then DecimalValue.NegZero else DecimalValue.PosZero
+  | DecimalValue.NegZero, _ => if isNegative y then DecimalValue.PosZero else DecimalValue.NegZero
+  | DecimalValue.Rational ⟨p, _⟩, DecimalValue.Rational ⟨q, _⟩ =>
     RoundToDecimal128Domain (p / q) RoundingMode.halfEven
 
-instance : HDiv Decimal128Value Decimal128Value Decimal128Value where
+instance : HDiv DecimalValue DecimalValue DecimalValue where
   hDiv := divide
 
 -- it should be possible for n to be positive or negative infinity, or even NaN
-def scale10 (x : Decimal128Value) (n : Int) : Decimal128Value :=
+def scale10 (x : DecimalValue) (n : Int) : DecimalValue :=
   match x with
-  | Decimal128Value.NaN => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity => Decimal128Value.NegInfinity
-  | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosZero => Decimal128Value.PosZero
-  | Decimal128Value.NegZero => Decimal128Value.NegZero
-  | Decimal128Value.Rational ⟨p, _⟩ => RoundToDecimal128Domain (p * (10 ^ n)) RoundingMode.halfEven
+  | DecimalValue.NaN => DecimalValue.NaN
+  | DecimalValue.NegInfinity => DecimalValue.NegInfinity
+  | DecimalValue.PosInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosZero => DecimalValue.PosZero
+  | DecimalValue.NegZero => DecimalValue.NegZero
+  | DecimalValue.Rational ⟨p, _⟩ => RoundToDecimal128Domain (p * (10 ^ n)) RoundingMode.halfEven
 
 private def truncate (x : Rat) : Rat :=
   if x < 0
   then 0 - Rat.floor (0 - x)
   else Rat.floor x
 
-def remainder (x : Decimal128Value) (y : Decimal128Value) : Decimal128Value :=
+def remainder (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   match x, y with
-  | Decimal128Value.NaN, _ => Decimal128Value.NaN
-  | _, Decimal128Value.NaN => Decimal128Value.NaN
-  | Decimal128Value.PosInfinity, _ => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity, _ => Decimal128Value.NaN
-  | _, Decimal128Value.PosInfinity => x
-  | _, Decimal128Value.NegInfinity => x
-  | _, Decimal128Value.PosZero => Decimal128Value.NaN
-  | _, Decimal128Value.NegZero => Decimal128Value.NaN
-  | Decimal128Value.PosZero, x => x
-  | Decimal128Value.NegZero, x => x
-  | Decimal128Value.Rational ⟨p, _⟩, Decimal128Value.Rational ⟨q, _⟩ =>
+  | DecimalValue.NaN, _ => DecimalValue.NaN
+  | _, DecimalValue.NaN => DecimalValue.NaN
+  | DecimalValue.PosInfinity, _ => DecimalValue.NaN
+  | DecimalValue.NegInfinity, _ => DecimalValue.NaN
+  | _, DecimalValue.PosInfinity => x
+  | _, DecimalValue.NegInfinity => x
+  | _, DecimalValue.PosZero => DecimalValue.NaN
+  | _, DecimalValue.NegZero => DecimalValue.NaN
+  | DecimalValue.PosZero, x => x
+  | DecimalValue.NegZero, x => x
+  | DecimalValue.Rational ⟨p, _⟩, DecimalValue.Rational ⟨q, _⟩ =>
     let q : Rat := truncate (p / q)
     let r : Rat := p - (q * q)
     if r == 0 && p < 0
-    then Decimal128Value.NegZero
+    then DecimalValue.NegZero
     else RoundToDecimal128Domain r RoundingMode.halfEven
 
-instance : HMod Decimal128Value Decimal128Value Decimal128Value where
+instance : HMod DecimalValue DecimalValue DecimalValue where
   hMod := remainder
 
-def exponent (x : Decimal128Value) : Decimal128Value :=
+def exponent (x : DecimalValue) : DecimalValue :=
   match x with
-  | Decimal128Value.NaN => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosZero => Decimal128Value.NegInfinity
-  | Decimal128Value.NegZero => Decimal128Value.NegInfinity
-  | Decimal128Value.Rational x =>
+  | DecimalValue.NaN => DecimalValue.NaN
+  | DecimalValue.NegInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosZero => DecimalValue.NegInfinity
+  | DecimalValue.NegZero => DecimalValue.NegInfinity
+  | DecimalValue.Rational x =>
     let e := rationalExponent x.val
+    -- Proves that the exponent of a rational is suitable
     have suitable : isRationalSuitable e := by sorry
-    Decimal128Value.Rational ⟨e, suitable⟩
+    DecimalValue.Rational ⟨e, suitable⟩
 
 def rationalSignificand (q : Rat) : Rat :=
   let re : Int := rationalExponent q
@@ -188,24 +189,26 @@ def rationalSignificand (q : Rat) : Rat :=
 
 #eval rationalSignificand 10.4
 
+-- Proves that extracting significand preserves suitability
 lemma significandPreservesSuitability (q : Rat) :
   isRationalSuitable q → isRationalSuitable (rationalSignificand q)
   := by
   sorry
 
+-- Proves that a rational equals its significand times 10 to its exponent
 lemma mantissaRepresentation (q : Rat) :
   q = (rationalSignificand q) * (10 ^ (rationalExponent q)) := by
   sorry
 
-def mantissa (x : Decimal128Value) : Decimal128Value :=
+def mantissa (x : DecimalValue) : DecimalValue :=
   match x with
-  | Decimal128Value.NaN => Decimal128Value.NaN
-  | Decimal128Value.NegInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosInfinity => Decimal128Value.PosInfinity
-  | Decimal128Value.PosZero => Decimal128Value.PosZero
-  | Decimal128Value.NegZero => Decimal128Value.NegZero
-  | Decimal128Value.Rational ⟨q, p⟩ =>
+  | DecimalValue.NaN => DecimalValue.NaN
+  | DecimalValue.NegInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosZero => DecimalValue.PosZero
+  | DecimalValue.NegZero => DecimalValue.NegZero
+  | DecimalValue.Rational ⟨q, p⟩ =>
     let s : Rat := rationalSignificand q
     have suitable : isRationalSuitable s := by
       apply significandPreservesSuitability q p
-    Decimal128Value.Rational ⟨s, suitable⟩
+    DecimalValue.Rational ⟨s, suitable⟩

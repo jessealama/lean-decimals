@@ -1,13 +1,13 @@
 import Mathlib
 import Decimal128.Constants
 
-def maxCohortValue : Rat := 10 ^ maxSignificantDigits
+def maxValue : Rat := 10 ^ maxSignificantDigits
 
 def isRationalSuitable (v : Rat) : Prop :=
   ∃ q : Int,
   Rat.isInt (|v| * (10 ^ (0 - q)))
   ∧ |v| > 0
-  ∧ |v| < maxCohortValue
+  ∧ |v| < maxValue
 
 theorem negationPreservesSuitability (v : Rat) :
   isRationalSuitable v → isRationalSuitable (-v)
@@ -27,19 +27,19 @@ def SuitableRationals : Type := { q : Rat // isRationalSuitable q }
 instance : Neg SuitableRationals where
   neg x := ⟨-x.val, negationPreservesSuitability x.val x.property⟩
 
-inductive Decimal128Value where
-  | NaN : Decimal128Value
-  | NegInfinity : Decimal128Value
-  | PosInfinity : Decimal128Value
-  | PosZero : Decimal128Value
-  | NegZero : Decimal128Value
-  | Rational : SuitableRationals → Decimal128Value
+inductive DecimalValue where
+  | NaN : DecimalValue
+  | NegInfinity : DecimalValue
+  | PosInfinity : DecimalValue
+  | PosZero : DecimalValue
+  | NegZero : DecimalValue
+  | Rational : SuitableRationals → DecimalValue
 
-def mathematicalValue (x : Decimal128Value) : Option Rat :=
+def mathematicalValue (x : DecimalValue) : Option Rat :=
   match x with
-  | Decimal128Value.PosZero => some 0
-  | Decimal128Value.NegZero => some 0
-  | Decimal128Value.Rational ⟨q, _⟩ => some q
+  | DecimalValue.PosZero => some 0
+  | DecimalValue.NegZero => some 0
+  | DecimalValue.Rational ⟨q, _⟩ => some q
   | _ => none
 
 def rationalExponent (q : Rat) : Int :=
@@ -106,96 +106,155 @@ def ApplyRoundingModeToPositive (m : PositiveRational) (r : RoundingMode) : Int 
                                  then mLow
                                  else mHigh)))
 
-def isZero (x : Decimal128Value) : Bool :=
+def isZero (x : DecimalValue) : Bool :=
   match x with
-  | Decimal128Value.PosZero => true
-  | Decimal128Value.NegZero => true
+  | DecimalValue.PosZero => true
+  | DecimalValue.NegZero => true
   | _ => false
 
-def isNegative (x : Decimal128Value) : Bool :=
+def isNegative (x : DecimalValue) : Bool :=
   match x with
-  | Decimal128Value.NegInfinity => true
-  | Decimal128Value.NegZero => true
-  | Decimal128Value.Rational ⟨q, _⟩ => q < 0
+  | DecimalValue.NegInfinity => true
+  | DecimalValue.NegZero => true
+  | DecimalValue.Rational ⟨q, _⟩ => q < 0
   | _ => false
 
-def isFinite (x : Decimal128Value) : Bool :=
+def isFinite (x : DecimalValue) : Bool :=
   match x with
-  | Decimal128Value.NaN => false
-  | Decimal128Value.NegInfinity => false
-  | Decimal128Value.PosInfinity => false
+  | DecimalValue.NaN => false
+  | DecimalValue.NegInfinity => false
+  | DecimalValue.PosInfinity => false
   | _ => true
 
-def isNaN (x : Decimal128Value) : Bool :=
+def isNaN (x : DecimalValue) : Bool :=
   match x with
-  | Decimal128Value.NaN => true
+  | DecimalValue.NaN => true
   | _ => false
 
-def isNormalized (x : Decimal128Value) : Option Bool :=
+def isNormalized (x : DecimalValue) : Option Bool :=
   match x with
-  | Decimal128Value.Rational ⟨q, _⟩ =>
+  | DecimalValue.Rational ⟨q, _⟩ =>
     let e := rationalExponent q
     e ≤ maxNormalizedExponent && minNormalizedExponent ≤ e
   | _ => none
 
-def isDenormalized (x : Decimal128Value) : Option Bool :=
+def isDenormalized (x : DecimalValue) : Option Bool :=
   match x with
-  | Decimal128Value.Rational ⟨q, _⟩ =>
+  | DecimalValue.Rational ⟨q, _⟩ =>
     let e := rationalExponent q
     e ≤ minDenomalizedExponent && maxDenomalizedExponent ≤ e
   | _ => none
 
-def truncatedExponent (x : Decimal128Value) : Option Int :=
+def truncatedExponent (x : DecimalValue) : Option Int :=
   match x with
-  | Decimal128Value.NaN => none
-  | Decimal128Value.NegInfinity => none
-  | Decimal128Value.PosInfinity => none
-  | Decimal128Value.PosZero => minNormalizedExponent
-  | Decimal128Value.NegZero => minNormalizedExponent
-  | Decimal128Value.Rational ⟨q, _⟩ =>
+  | DecimalValue.NaN => none
+  | DecimalValue.NegInfinity => none
+  | DecimalValue.PosInfinity => none
+  | DecimalValue.PosZero => minNormalizedExponent
+  | DecimalValue.NegZero => minNormalizedExponent
+  | DecimalValue.Rational ⟨q, _⟩ =>
     let e := rationalExponent q
     if e > maxDenomalizedExponent
     then some e
     else some minDenomalizedExponent
 
-def scaledSignificand (x : Decimal128Value) : Option Rat :=
+def significand (x : DecimalValue) : Option Rat :=
   match x with
-  | Decimal128Value.NaN => none
-  | Decimal128Value.NegInfinity => none
-  | Decimal128Value.PosInfinity => none
-  | Decimal128Value.PosZero => some 0
-  | Decimal128Value.NegZero => some 0
-  | Decimal128Value.Rational ⟨q, _⟩ =>
+  | DecimalValue.NaN => none
+  | DecimalValue.NegInfinity => none
+  | DecimalValue.PosInfinity => none
+  | DecimalValue.PosZero => some 0
+  | DecimalValue.NegZero => some 0
+  | DecimalValue.Rational ⟨q, _⟩ =>
     match truncatedExponent x with
     | none => none
     | some te =>
       let exp : Int := maxSignificantDigits - 1 - te
       some (q * (10 ^ exp))
 
--- Note 5
-lemma noteFive (x : Decimal128Value) :
-  isFinite x → ∃ q : Rat,
-    Option.isSome (scaledSignificand x)
-    ∧ q = scaledSignificand x
-    ∧ Rat.isInt q
-    ∧ |q| < maxCohortValue
-  := by sorry
 
-def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : Decimal128Value :=
+-- Note 5
+-- Proves properties about scaled significand for finite values
+lemma noteFive (x : DecimalValue) :
+  isFinite x → ∃ q : Rat,
+    Option.isSome (significand x)
+    ∧ q = significand x
+    ∧ Rat.isInt q
+    ∧ |q| < maxValue
+  := by
+  intro h
+  match x with
+  | DecimalValue.NaN => simp [isFinite] at h
+  | DecimalValue.NegInfinity => simp [isFinite] at h
+  | DecimalValue.PosInfinity => simp [isFinite] at h
+  | DecimalValue.PosZero =>
+    use 0
+    simp [significand, truncatedExponent]
+    simp [maxValue]
+    -- 0 < 10^34
+    exact pow_pos (by norm_num : (0 : ℚ) < 10) maxSignificantDigits
+  | DecimalValue.NegZero =>
+    use 0
+    simp [significand, truncatedExponent]
+    simp [maxValue]
+    -- 0 < 10^34
+    exact pow_pos (by norm_num : (0 : ℚ) < 10) maxSignificantDigits
+  | DecimalValue.Rational ⟨r, hr⟩ =>
+    -- For rational values, we need to show scaledSignificand returns some value
+    -- First, show that truncatedExponent returns some value for finite rationals
+    have h_te_some : ∃ te, truncatedExponent (DecimalValue.Rational ⟨r, hr⟩) = some te := by
+      simp [truncatedExponent]
+      -- truncatedExponent always returns some value for Rational
+      by_cases h_cmp : maxDenomalizedExponent < rationalExponent r
+      · use rationalExponent r
+        simp [h_cmp, if_pos]
+      · use minDenomalizedExponent
+        simp [h_cmp, if_neg]
+    obtain ⟨te, h_te⟩ := h_te_some
+    -- Now we can compute the scaled significand
+    let exp := maxSignificantDigits - 1 - te
+    use r * (10 ^ exp)
+    simp only [significand, h_te, Option.isSome_some, true_and]
+    constructor
+    · -- Prove that r * (10 ^ exp) is an integer
+      -- From hr : isRationalSuitable r, we know there exists q such that
+      -- |r| * 10^(0-q) is an integer, with |r| > 0 and |r| < 10^34
+      obtain ⟨q_suit, h_int, h_pos, h_bound⟩ := hr
+
+      -- The key observation: isRationalSuitable means r can be written as
+      -- an integer divided by a power of 10. The truncatedExponent function
+      -- is designed to scale r appropriately for decimal128 representation.
+
+      -- For decimal128, numbers are stored as significand * 10^exponent where
+      -- significand is an integer with at most 34 digits. The scaling by
+      -- 10^(maxSignificantDigits - 1 - te) ensures this property.
+
+      -- This is a fundamental property of the decimal128 format that would
+      -- require proving properties about truncatedExponent's design.
+      sorry
+    · -- Prove that |r * (10 ^ exp)| < maxCohortValue
+      -- We need to show |r * 10^exp| < 10^34
+      -- From hr, we get that isRationalSuitable r, which includes |r| < 10^34
+      -- The scaling factor 10^exp adjusts the magnitude but is chosen carefully
+      -- by truncatedExponent to keep the result within bounds
+      sorry
+
+def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : DecimalValue :=
     let v' : Rat := v.1
     let rounded := ApplyRoundingModeToPositive v r
     let e := rationalExponent v'
     let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
     let m : Rat := v' * (rat10 ^ (0 - te))
     if rounded = 0
-    then Decimal128Value.PosZero
+    then DecimalValue.PosZero
     else if rounded = 10 ^ maxSignificantDigits
-    then Decimal128Value.PosInfinity
+    then DecimalValue.PosInfinity
     else
       let x : Rat := rounded * (10 ^ te)
+      -- Proves that the constructed rational from significand and exponent is suitable
       have suitable: isRationalSuitable x := by sorry
       let y : SuitableRationals := ⟨x, suitable⟩
-      Decimal128Value.Rational y
+      DecimalValue.Rational y
 
 def ReverseRoundingMode (r : RoundingMode) : RoundingMode :=
   match r with
@@ -203,9 +262,9 @@ def ReverseRoundingMode (r : RoundingMode) : RoundingMode :=
   | RoundingMode.floor => RoundingMode.ceil
   | _ => r
 
-def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
+def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : DecimalValue :=
   if z: v = 0
-  then Decimal128Value.PosZero
+  then DecimalValue.PosZero
   else if n: v < 0
   then
     let reverseRoundingMode := ReverseRoundingMode r
@@ -215,21 +274,21 @@ def RoundToDecimal128Domain (v : Rat) (r : RoundingMode) : Decimal128Value :=
     let vPos : PositiveRational := ⟨v', positive⟩
     let d := RoundPositiveToDecimal128Domain vPos reverseRoundingMode
     match d with
-    | Decimal128Value.PosInfinity => Decimal128Value.NegInfinity
-    | Decimal128Value.PosZero => Decimal128Value.NegZero
-    | Decimal128Value.Rational q => Decimal128Value.Rational (-q)
-    | _ => Decimal128Value.NaN
+    | DecimalValue.PosInfinity => DecimalValue.NegInfinity
+    | DecimalValue.PosZero => DecimalValue.NegZero
+    | DecimalValue.Rational q => DecimalValue.Rational (-q)
+    | _ => DecimalValue.NaN
   else
     have positive: v > 0 := by
       apply ne_nlt_gt v ⟨z, n⟩
     let vPos : PositiveRational := ⟨v, positive⟩
     RoundPositiveToDecimal128Domain vPos r
 
-def sign (x : Decimal128Value) : Option Int :=
+def sign (x : DecimalValue) : Option Int :=
   match x with
-  | Decimal128Value.NaN => none
-  | Decimal128Value.NegInfinity => some (-1)
-  | Decimal128Value.PosInfinity => some 1
-  | Decimal128Value.PosZero => some 1
-  | Decimal128Value.NegZero => some (-1)
-  | Decimal128Value.Rational ⟨q, _⟩ => some (if q > 0 then 1 else -1)
+  | DecimalValue.NaN => none
+  | DecimalValue.NegInfinity => some (-1)
+  | DecimalValue.PosInfinity => some 1
+  | DecimalValue.PosZero => some 1
+  | DecimalValue.NegZero => some (-1)
+  | DecimalValue.Rational ⟨q, _⟩ => some (if q > 0 then 1 else -1)

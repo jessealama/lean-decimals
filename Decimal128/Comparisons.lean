@@ -1,133 +1,133 @@
 import Mathlib
 import Decimal128.Basic
 
-def equals (x : Decimal128Value) (y : Decimal128Value) : Bool :=
+def equals (x : DecimalValue) (y : DecimalValue) : Bool :=
   match x, y with
-  | Decimal128Value.NaN, _ => false
-  | _, Decimal128Value.NaN => false
-  | Decimal128Value.PosInfinity, Decimal128Value.PosInfinity => true
-  | Decimal128Value.PosInfinity, _ => false
-  | Decimal128Value.NegInfinity, Decimal128Value.NegInfinity => true
-  | Decimal128Value.NegInfinity, _ => false
-  | Decimal128Value.PosZero, Decimal128Value.PosZero => true
-  | Decimal128Value.NegZero, Decimal128Value.NegZero => true
-  | Decimal128Value.Rational x, Decimal128Value.Rational y => x.val = y.val
+  | DecimalValue.NaN, _ => false
+  | _, DecimalValue.NaN => false
+  | DecimalValue.PosInfinity, DecimalValue.PosInfinity => true
+  | DecimalValue.PosInfinity, _ => false
+  | DecimalValue.NegInfinity, DecimalValue.NegInfinity => true
+  | DecimalValue.NegInfinity, _ => false
+  | DecimalValue.PosZero, DecimalValue.PosZero => true
+  | DecimalValue.NegZero, DecimalValue.NegZero => true
+  | DecimalValue.Rational x, DecimalValue.Rational y => x.val = y.val
   | _, _ => false
 
-instance : BEq Decimal128Value where
+instance : BEq DecimalValue where
   beq := equals
 
-def notEquals (x : Decimal128Value) (y : Decimal128Value) : Bool :=
+def notEquals (x : DecimalValue) (y : DecimalValue) : Bool :=
   match x, y with
-  | Decimal128Value.NaN, _ => false
-  | _, Decimal128Value.NaN => false
-  | Decimal128Value.PosInfinity, Decimal128Value.PosInfinity => false
-  | Decimal128Value.PosInfinity, _ => true
-  | Decimal128Value.NegInfinity, Decimal128Value.NegInfinity => false
-  | Decimal128Value.NegInfinity, _ => true
-  | Decimal128Value.PosZero, Decimal128Value.PosZero => false
-  | Decimal128Value.NegZero, Decimal128Value.NegZero => true
-  | Decimal128Value.Rational x, Decimal128Value.Rational y => !(x.val = y.val)
+  | DecimalValue.NaN, _ => false
+  | _, DecimalValue.NaN => false
+  | DecimalValue.PosInfinity, DecimalValue.PosInfinity => false
+  | DecimalValue.PosInfinity, _ => true
+  | DecimalValue.NegInfinity, DecimalValue.NegInfinity => false
+  | DecimalValue.NegInfinity, _ => true
+  | DecimalValue.PosZero, DecimalValue.PosZero => false
+  | DecimalValue.NegZero, DecimalValue.NegZero => true
+  | DecimalValue.Rational x, DecimalValue.Rational y => !(x.val = y.val)
   | _, _ => false
 
-def lessThan (x : Decimal128Value) (y : Decimal128Value) : Bool :=
+def lessThan (x : DecimalValue) (y : DecimalValue) : Bool :=
   match x, y with
-  | Decimal128Value.NaN, _ => false
-  | _, Decimal128Value.NaN => false
-  | Decimal128Value.PosInfinity, Decimal128Value.PosInfinity => false
-  | Decimal128Value.PosInfinity, _ => false
-  | Decimal128Value.NegInfinity, Decimal128Value.NegInfinity => false
-  | Decimal128Value.NegInfinity, _ => true
-  | Decimal128Value.PosZero, Decimal128Value.NegInfinity => false
-  | Decimal128Value.PosZero, Decimal128Value.PosInfinity => true
-  | Decimal128Value.PosZero, Decimal128Value.PosZero => false
-  | Decimal128Value.PosZero, Decimal128Value.NegZero => false
-  | Decimal128Value.PosZero, Decimal128Value.Rational x => x.val > 0
-  | Decimal128Value.NegZero, Decimal128Value.NegInfinity => false
-  | Decimal128Value.NegZero, Decimal128Value.PosInfinity => true
-  | Decimal128Value.NegZero, Decimal128Value.NegZero => false
-  | Decimal128Value.NegZero, Decimal128Value.PosZero => true
-  | Decimal128Value.NegZero, Decimal128Value.Rational x => x.val < 0
-  | Decimal128Value.Rational _, Decimal128Value.PosInfinity => true
-  | Decimal128Value.Rational _, Decimal128Value.NegInfinity => false
-  | Decimal128Value.Rational x, Decimal128Value.PosZero => x.val < 0
-  | Decimal128Value.Rational x, Decimal128Value.NegZero => x.val < 0
-  | Decimal128Value.Rational x, Decimal128Value.Rational y => x.val < y.val
+  | DecimalValue.NaN, _ => false
+  | _, DecimalValue.NaN => false
+  | DecimalValue.PosInfinity, DecimalValue.PosInfinity => false
+  | DecimalValue.PosInfinity, _ => false
+  | DecimalValue.NegInfinity, DecimalValue.NegInfinity => false
+  | DecimalValue.NegInfinity, _ => true
+  | DecimalValue.PosZero, DecimalValue.NegInfinity => false
+  | DecimalValue.PosZero, DecimalValue.PosInfinity => true
+  | DecimalValue.PosZero, DecimalValue.PosZero => false
+  | DecimalValue.PosZero, DecimalValue.NegZero => false
+  | DecimalValue.PosZero, DecimalValue.Rational x => x.val > 0
+  | DecimalValue.NegZero, DecimalValue.NegInfinity => false
+  | DecimalValue.NegZero, DecimalValue.PosInfinity => true
+  | DecimalValue.NegZero, DecimalValue.NegZero => false
+  | DecimalValue.NegZero, DecimalValue.PosZero => true
+  | DecimalValue.NegZero, DecimalValue.Rational x => x.val < 0
+  | DecimalValue.Rational _, DecimalValue.PosInfinity => true
+  | DecimalValue.Rational _, DecimalValue.NegInfinity => false
+  | DecimalValue.Rational x, DecimalValue.PosZero => x.val < 0
+  | DecimalValue.Rational x, DecimalValue.NegZero => x.val < 0
+  | DecimalValue.Rational x, DecimalValue.Rational y => x.val < y.val
 
-instance : LT Decimal128Value where
+instance : LT DecimalValue where
   lt x y := lessThan x y
 
-def lessThanOrEqual (x : Decimal128Value) (y : Decimal128Value) : Bool :=
+def lessThanOrEqual (x : DecimalValue) (y : DecimalValue) : Bool :=
   match x, y with
-  | Decimal128Value.NaN, _ => false
-  | _, Decimal128Value.NaN => false
-  | Decimal128Value.PosInfinity, Decimal128Value.PosInfinity => true
-  | Decimal128Value.PosInfinity, _ => false
-  | Decimal128Value.NegInfinity, _ => true
-  | Decimal128Value.PosZero, Decimal128Value.NegInfinity => false
-  | Decimal128Value.PosZero, Decimal128Value.PosInfinity => true
-  | Decimal128Value.PosZero, Decimal128Value.PosZero => true
-  | Decimal128Value.PosZero, Decimal128Value.NegZero => true
-  | Decimal128Value.PosZero, Decimal128Value.Rational x => x.val ≥ 0
-  | Decimal128Value.NegZero, Decimal128Value.NegInfinity => false
-  | Decimal128Value.NegZero, Decimal128Value.PosInfinity => true
-  | Decimal128Value.NegZero, Decimal128Value.NegZero => true
-  | Decimal128Value.NegZero, Decimal128Value.PosZero => true
-  | Decimal128Value.NegZero, Decimal128Value.Rational x => x.val ≤ 0
-  | Decimal128Value.Rational _, Decimal128Value.PosInfinity => true
-  | Decimal128Value.Rational _, Decimal128Value.NegInfinity => false
-  | Decimal128Value.Rational x, Decimal128Value.PosZero => x.val ≤ 0
-  | Decimal128Value.Rational x, Decimal128Value.NegZero => x.val ≤ 0
-  | Decimal128Value.Rational x, Decimal128Value.Rational y => x.val ≤ y.val
+  | DecimalValue.NaN, _ => false
+  | _, DecimalValue.NaN => false
+  | DecimalValue.PosInfinity, DecimalValue.PosInfinity => true
+  | DecimalValue.PosInfinity, _ => false
+  | DecimalValue.NegInfinity, _ => true
+  | DecimalValue.PosZero, DecimalValue.NegInfinity => false
+  | DecimalValue.PosZero, DecimalValue.PosInfinity => true
+  | DecimalValue.PosZero, DecimalValue.PosZero => true
+  | DecimalValue.PosZero, DecimalValue.NegZero => true
+  | DecimalValue.PosZero, DecimalValue.Rational x => x.val ≥ 0
+  | DecimalValue.NegZero, DecimalValue.NegInfinity => false
+  | DecimalValue.NegZero, DecimalValue.PosInfinity => true
+  | DecimalValue.NegZero, DecimalValue.NegZero => true
+  | DecimalValue.NegZero, DecimalValue.PosZero => true
+  | DecimalValue.NegZero, DecimalValue.Rational x => x.val ≤ 0
+  | DecimalValue.Rational _, DecimalValue.PosInfinity => true
+  | DecimalValue.Rational _, DecimalValue.NegInfinity => false
+  | DecimalValue.Rational x, DecimalValue.PosZero => x.val ≤ 0
+  | DecimalValue.Rational x, DecimalValue.NegZero => x.val ≤ 0
+  | DecimalValue.Rational x, DecimalValue.Rational y => x.val ≤ y.val
 
-  instance : LE Decimal128Value where
+  instance : LE DecimalValue where
     le x y := lessThanOrEqual x y
 
-def greaterThan (x : Decimal128Value) (y : Decimal128Value) : Bool :=
+def greaterThan (x : DecimalValue) (y : DecimalValue) : Bool :=
   match x, y with
-  | Decimal128Value.NaN, _ => false
-  | _, Decimal128Value.NaN => false
-  | Decimal128Value.PosInfinity, Decimal128Value.PosInfinity => false
-  | Decimal128Value.PosInfinity, _ => false
-  | Decimal128Value.NegInfinity, _ => true
-  | Decimal128Value.PosZero, Decimal128Value.NegInfinity => true
-  | Decimal128Value.PosZero, Decimal128Value.PosInfinity => false
-  | Decimal128Value.PosZero, Decimal128Value.PosZero => false
-  | Decimal128Value.PosZero, Decimal128Value.NegZero => true
-  | Decimal128Value.PosZero, Decimal128Value.Rational x => x.val < 0
-  | Decimal128Value.NegZero, Decimal128Value.NegInfinity => true
-  | Decimal128Value.NegZero, Decimal128Value.PosInfinity => false
-  | Decimal128Value.NegZero, Decimal128Value.NegZero => false
-  | Decimal128Value.NegZero, Decimal128Value.PosZero => false
-  | Decimal128Value.NegZero, Decimal128Value.Rational x => x.val > 0
-  | Decimal128Value.Rational _, Decimal128Value.PosInfinity => false
-  | Decimal128Value.Rational _, Decimal128Value.NegInfinity => true
-  | Decimal128Value.Rational x, Decimal128Value.PosZero => x.val > 0
-  | Decimal128Value.Rational x, Decimal128Value.NegZero => x.val > 0
-  | Decimal128Value.Rational x, Decimal128Value.Rational y => x.val > y.val
+  | DecimalValue.NaN, _ => false
+  | _, DecimalValue.NaN => false
+  | DecimalValue.PosInfinity, DecimalValue.PosInfinity => false
+  | DecimalValue.PosInfinity, _ => false
+  | DecimalValue.NegInfinity, _ => true
+  | DecimalValue.PosZero, DecimalValue.NegInfinity => true
+  | DecimalValue.PosZero, DecimalValue.PosInfinity => false
+  | DecimalValue.PosZero, DecimalValue.PosZero => false
+  | DecimalValue.PosZero, DecimalValue.NegZero => true
+  | DecimalValue.PosZero, DecimalValue.Rational x => x.val < 0
+  | DecimalValue.NegZero, DecimalValue.NegInfinity => true
+  | DecimalValue.NegZero, DecimalValue.PosInfinity => false
+  | DecimalValue.NegZero, DecimalValue.NegZero => false
+  | DecimalValue.NegZero, DecimalValue.PosZero => false
+  | DecimalValue.NegZero, DecimalValue.Rational x => x.val > 0
+  | DecimalValue.Rational _, DecimalValue.PosInfinity => false
+  | DecimalValue.Rational _, DecimalValue.NegInfinity => true
+  | DecimalValue.Rational x, DecimalValue.PosZero => x.val > 0
+  | DecimalValue.Rational x, DecimalValue.NegZero => x.val > 0
+  | DecimalValue.Rational x, DecimalValue.Rational y => x.val > y.val
 
-def greaterThanOrEqual (x : Decimal128Value) (y : Decimal128Value) : Bool :=
+def greaterThanOrEqual (x : DecimalValue) (y : DecimalValue) : Bool :=
   match x, y with
-  | Decimal128Value.NaN, _ => false
-  | _, Decimal128Value.NaN => false
-  | Decimal128Value.PosInfinity, _ => true
-  | Decimal128Value.NegInfinity, Decimal128Value.NegInfinity => true
-  | Decimal128Value.NegInfinity, _ => false
-  | Decimal128Value.PosZero, Decimal128Value.NegInfinity => true
-  | Decimal128Value.PosZero, Decimal128Value.PosInfinity => false
-  | Decimal128Value.PosZero, Decimal128Value.PosZero => true
-  | Decimal128Value.PosZero, Decimal128Value.NegZero => true
-  | Decimal128Value.PosZero, Decimal128Value.Rational x => x.val ≤ 0
-  | Decimal128Value.NegZero, Decimal128Value.NegInfinity => true
-  | Decimal128Value.NegZero, Decimal128Value.PosInfinity => false
-  | Decimal128Value.NegZero, Decimal128Value.NegZero => true
-  | Decimal128Value.NegZero, Decimal128Value.PosZero => true
-  | Decimal128Value.NegZero, Decimal128Value.Rational x => x.val ≤ 0
-  | Decimal128Value.Rational _, Decimal128Value.PosInfinity => false
-  | Decimal128Value.Rational _, Decimal128Value.NegInfinity => true
-  | Decimal128Value.Rational x, Decimal128Value.PosZero => x.val ≥ 0
-  | Decimal128Value.Rational x, Decimal128Value.NegZero => x.val ≥ 0
-  | Decimal128Value.Rational x, Decimal128Value.Rational y => x.val ≥ y.val
+  | DecimalValue.NaN, _ => false
+  | _, DecimalValue.NaN => false
+  | DecimalValue.PosInfinity, _ => true
+  | DecimalValue.NegInfinity, DecimalValue.NegInfinity => true
+  | DecimalValue.NegInfinity, _ => false
+  | DecimalValue.PosZero, DecimalValue.NegInfinity => true
+  | DecimalValue.PosZero, DecimalValue.PosInfinity => false
+  | DecimalValue.PosZero, DecimalValue.PosZero => true
+  | DecimalValue.PosZero, DecimalValue.NegZero => true
+  | DecimalValue.PosZero, DecimalValue.Rational x => x.val ≤ 0
+  | DecimalValue.NegZero, DecimalValue.NegInfinity => true
+  | DecimalValue.NegZero, DecimalValue.PosInfinity => false
+  | DecimalValue.NegZero, DecimalValue.NegZero => true
+  | DecimalValue.NegZero, DecimalValue.PosZero => true
+  | DecimalValue.NegZero, DecimalValue.Rational x => x.val ≤ 0
+  | DecimalValue.Rational _, DecimalValue.PosInfinity => false
+  | DecimalValue.Rational _, DecimalValue.NegInfinity => true
+  | DecimalValue.Rational x, DecimalValue.PosZero => x.val ≥ 0
+  | DecimalValue.Rational x, DecimalValue.NegZero => x.val ≥ 0
+  | DecimalValue.Rational x, DecimalValue.Rational y => x.val ≥ y.val
 
 inductive CmpResult where
   | NaN : CmpResult
@@ -135,10 +135,10 @@ inductive CmpResult where
   | equal : CmpResult
   | greaterThan : CmpResult
 
-  def compare (x : Decimal128Value) (y : Decimal128Value) : CmpResult :=
+  def compare (x : DecimalValue) (y : DecimalValue) : CmpResult :=
     match x, y with
-    | Decimal128Value.NaN, _ => CmpResult.NaN
-    | _, Decimal128Value.NaN => CmpResult.NaN
+    | DecimalValue.NaN, _ => CmpResult.NaN
+    | _, DecimalValue.NaN => CmpResult.NaN
     | _, _ => if equals x y then CmpResult.equal
               else if lessThan x y then CmpResult.lessThan
               else CmpResult.greaterThan
