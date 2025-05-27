@@ -154,14 +154,20 @@ theorem remainderCorrect (p : Rat) (q : Rat) :
   sorry
 
 -- Proves that scaling by powers of 10 produces the expected result
-theorem scale10Correct (p : Rat) (n : Nat) :
+theorem scale10Correct (p : Rat) (n : Int) :
   isRationalSuitable p
-∧ isRationalSuitable (p ^ (10 * n))
-→ ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable (p ^ (10 * n))),
-  scale10 (DecimalValue.Rational ⟨p, s1⟩)
-          n
-  = DecimalValue.Rational ⟨p ^ (10 * n), s2⟩
-:= by sorry
+∧ isRationalSuitable (p * (10 ^ n))
+→ ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable (p * (10 ^ n))),
+  scale10 (DecimalValue.Rational ⟨p, s1⟩) n
+  = DecimalValue.Rational ⟨p * (10 ^ n), s2⟩
+:= by
+  intro ⟨h1, h2⟩
+  use h1
+  -- Apply the roundPreservesSuitable lemma
+  obtain ⟨s2, h_round⟩ := roundPreservesSuitable (p * (10 ^ n)) RoundingMode.halfEven h2
+  use s2
+  simp [scale10]
+  exact h_round
 
 -- Proves that exponent extraction produces the expected result
 theorem exponentCorrect (p : Rat) :
