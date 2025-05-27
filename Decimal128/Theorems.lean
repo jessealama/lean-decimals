@@ -98,7 +98,14 @@ theorem divisionCorrect (p : Rat) (q : Rat) :
   divide (DecimalValue.Rational ⟨p, s1⟩)
       (DecimalValue.Rational ⟨q, s2⟩)
   = DecimalValue.Rational ⟨p / q, s3⟩
-:= by sorry
+:= by
+  intro ⟨h1, h2, h3⟩
+  use h1, h2
+  -- Apply the roundPreservesSuitable lemma
+  obtain ⟨s3, h_round⟩ := roundPreservesSuitable (p / q) RoundingMode.halfEven h3
+  use s3
+  simp [divide]
+  exact h_round
 
 -- Proves that remainder of two suitable rationals produces the expected result
 theorem remainderCorrect (p : Rat) (q : Rat) :
