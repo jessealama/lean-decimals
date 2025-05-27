@@ -1,6 +1,11 @@
 import Mathlib
 import Decimal128.Basic
 
+-- Proves that the exponent of a suitable rational is itself suitable
+lemma exponentSuitable (p : Rat) :
+  isRationalSuitable p → isRationalSuitable (rationalExponent p : Rat)
+:= by sorry
+
 theorem absoluteValuePreservesSuitability (v : Rat) :
   isRationalSuitable v → isRationalSuitable |v|
   := by
@@ -177,9 +182,10 @@ def exponent (x : DecimalValue) : DecimalValue :=
   | DecimalValue.PosZero => DecimalValue.NegInfinity
   | DecimalValue.NegZero => DecimalValue.NegInfinity
   | DecimalValue.Rational x =>
-    let e := rationalExponent x.val
+    let e : Rat := rationalExponent x.val
     -- Proves that the exponent of a rational is suitable
-    have suitable : isRationalSuitable e := by sorry
+    have suitable : isRationalSuitable e := by
+      apply exponentSuitable x.val x.property
     DecimalValue.Rational ⟨e, suitable⟩
 
 def rationalSignificand (q : Rat) : Rat :=

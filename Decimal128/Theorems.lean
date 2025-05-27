@@ -172,15 +172,23 @@ theorem scale10Correct (p : Rat) (n : Int) :
 -- Proves that exponent extraction produces the expected result
 theorem exponentCorrect (p : Rat) :
   isRationalSuitable p
-  → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable (rationalExponent p)),
+  → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable (rationalExponent p : Rat)),
     exponent (DecimalValue.Rational ⟨p, s1⟩)
-    = DecimalValue.Rational ⟨rationalExponent p, s2⟩
-:= by sorry
+    = DecimalValue.Rational ⟨(rationalExponent p : Rat), s2⟩
+:= by
+  intro h1
+  use h1
+  -- We need to prove that the exponent is suitable
+  have h2 : isRationalSuitable (rationalExponent p : Rat) := exponentSuitable p h1
+  use h2
+  simp [exponent]
+  -- The exponent function needs the same proof we just provided
+  congr
 
 -- Proves that mantissa extraction produces the expected result
 theorem mantissaCorrect (p : Rat) :
   isRationalSuitable p
   → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable (rationalSignificand p)),
-    exponent (DecimalValue.Rational ⟨p, s1⟩)
+    mantissa (DecimalValue.Rational ⟨p, s1⟩)
     = DecimalValue.Rational ⟨rationalSignificand p, s2⟩
 := by sorry
