@@ -2,6 +2,13 @@ import Mathlib
 import Decimal128.Basic
 import Decimal128.Arithmetic
 
+-- Proves that RoundToDecimal128Domain preserves suitable rationals exactly
+lemma roundPreservesSuitable (p : Rat) (r : RoundingMode) :
+  isRationalSuitable p →
+  ∃ (s : isRationalSuitable p),
+    RoundToDecimal128Domain p r = DecimalValue.Rational ⟨p, s⟩
+:= by sorry
+
 -- Proves that negating a suitable rational produces the expected result
 theorem negationCorrect (p : Rat) :
   isRationalSuitable p
@@ -37,7 +44,14 @@ theorem additionCorrect (p : Rat) (q : Rat) :
   add (DecimalValue.Rational ⟨p, s1⟩)
       (DecimalValue.Rational ⟨q, s2⟩)
   = DecimalValue.Rational ⟨p + q, s3⟩
-:= by sorry
+:= by
+  intro ⟨h1, h2, h3⟩
+  use h1, h2
+  -- Apply the roundPreservesSuitable lemma
+  obtain ⟨s3, h_round⟩ := roundPreservesSuitable (p + q) RoundingMode.halfEven h3
+  use s3
+  simp [add]
+  exact h_round
 
 -- Proves that subtracting two suitable rationals produces the expected result
 theorem subtractionCorrect (p : Rat) (q : Rat) :
