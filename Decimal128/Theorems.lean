@@ -191,4 +191,11 @@ theorem mantissaCorrect (p : Rat) :
   → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable (rationalSignificand p)),
     mantissa (DecimalValue.Rational ⟨p, s1⟩)
     = DecimalValue.Rational ⟨rationalSignificand p, s2⟩
-:= by sorry
+:= by
+  intro h1
+  use h1
+  -- The mantissa function already applies significandPreservesSuitability
+  have h2 : isRationalSuitable (rationalSignificand p) := significandPreservesSuitability p h1
+  use h2
+  simp [mantissa]
+  rfl
