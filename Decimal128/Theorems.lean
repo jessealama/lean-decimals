@@ -45,7 +45,7 @@ theorem subtractionCorrect (p : Rat) (q : Rat) :
 ∧ isRationalSuitable q
 ∧ isRationalSuitable (p - q)
 → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable q) (s3 : isRationalSuitable (p - q)),
-  add (DecimalValue.Rational ⟨p, s1⟩)
+  sub (DecimalValue.Rational ⟨p, s1⟩)
       (DecimalValue.Rational ⟨q, s2⟩)
   = DecimalValue.Rational ⟨p - q, s3⟩
 := by sorry
@@ -56,7 +56,7 @@ theorem multiplicationCorrect (p : Rat) (q : Rat) :
 ∧ isRationalSuitable q
 ∧ isRationalSuitable (p * q)
 → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable q) (s3 : isRationalSuitable (p * q)),
-  add (DecimalValue.Rational ⟨p, s1⟩)
+  multiply (DecimalValue.Rational ⟨p, s1⟩)
       (DecimalValue.Rational ⟨q, s2⟩)
   = DecimalValue.Rational ⟨p * q, s3⟩
 := by sorry
@@ -67,7 +67,7 @@ theorem divisionCorrect (p : Rat) (q : Rat) :
 ∧ isRationalSuitable q
 ∧ isRationalSuitable (p / q)
 → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable q) (s3 : isRationalSuitable (p / q)),
-  add (DecimalValue.Rational ⟨p, s1⟩)
+  divide (DecimalValue.Rational ⟨p, s1⟩)
       (DecimalValue.Rational ⟨q, s2⟩)
   = DecimalValue.Rational ⟨p / q, s3⟩
 := by sorry
@@ -78,7 +78,7 @@ theorem remainderCorrect (p : Rat) (q : Rat) :
 ∧ isRationalSuitable q
 ∧ isRationalSuitable (p % q)
 → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable q) (s3 : isRationalSuitable (p % q)),
-  add (DecimalValue.Rational ⟨p, s1⟩)
+  remainder (DecimalValue.Rational ⟨p, s1⟩)
       (DecimalValue.Rational ⟨q, s2⟩)
   = DecimalValue.Rational ⟨p % q, s3⟩
 := by sorry
