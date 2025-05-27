@@ -160,8 +160,8 @@ def remainder (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   | DecimalValue.PosZero, x => x
   | DecimalValue.NegZero, x => x
   | DecimalValue.Rational ⟨p, _⟩, DecimalValue.Rational ⟨q, _⟩ =>
-    let q : Rat := truncate (p / q)
-    let r : Rat := p - (q * q)
+    let quotient : Rat := truncate (p / q)
+    let r : Rat := p - (quotient * q)
     if r == 0 && p < 0
     then DecimalValue.NegZero
     else RoundToDecimal128Domain r RoundingMode.halfEven
