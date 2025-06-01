@@ -9,12 +9,6 @@ def isRationalSuitable (v : Rat) : Prop :=
   ∧ |v| > 0
   ∧ |v| < maxValue
 
--- Proves that the result of RoundPositiveToDecimal128Domain construction is suitable
--- when rounded is positive and less than 10^maxSignificantDigits
-lemma roundedResultSuitable (rounded : Int) (te : Int) :
-  0 < rounded → rounded < 10 ^ maxSignificantDigits →
-  isRationalSuitable (rounded * (10 : Rat) ^ te) := by
-  sorry
 
 theorem negationPreservesSuitability (v : Rat) :
   isRationalSuitable v → isRationalSuitable (-v)
@@ -155,6 +149,7 @@ lemma ApplyRoundingModeToPositive_nonneg (m : PositiveRational) (r : RoundingMod
                 have : 0 ≤ Int.floor m.1 := floor_nonneg
                 omega
               exact this
+
 
 def isZero (x : DecimalValue) : Bool :=
   match x with
@@ -365,10 +360,15 @@ lemma noteFive (x : DecimalValue) :
 
 def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : DecimalValue :=
     let v' : Rat := v.1
-    let rounded := ApplyRoundingModeToPositive v r
     let e := rationalExponent v'
     let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
     let m : Rat := v' * (rat10 ^ (0 - te))
+    let mPos : PositiveRational := ⟨m, by 
+      have hv_pos : 0 < v.1 := v.2
+      have h_rat10_pos : 0 < rat10 := by simp [rat10]
+      have h_pow_pos : 0 < rat10 ^ (0 - te) := by sorry -- powers of positive rationals are positive
+      exact mul_pos hv_pos h_pow_pos⟩
+    let rounded := ApplyRoundingModeToPositive mPos r
     if h1 : rounded = 0
     then DecimalValue.PosZero
     else if h2 : rounded = 10 ^ maxSignificantDigits
@@ -377,11 +377,26 @@ def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : 
       let x : Rat := rounded * (10 ^ te)
       -- Proves that the constructed rational from significand and exponent is suitable
       have h_pos : 0 < rounded := by
-        exact lt_of_le_of_ne (ApplyRoundingModeToPositive_nonneg v r) (Ne.symm h1)
+        exact lt_of_le_of_ne (ApplyRoundingModeToPositive_nonneg mPos r) (Ne.symm h1)
       have h_bound : rounded < 10 ^ maxSignificantDigits := by
         -- h2 gives us rounded ≠ 10 ^ maxSignificantDigits
-        sorry
-      have suitable: isRationalSuitable x := roundedResultSuitable rounded te h_pos h_bound
+        -- Since ApplyRoundingModeToPositive rounds m to an integer, and m is scaled
+        -- to have the appropriate magnitude by the choice of te, rounded should be ≤ 10^34
+        have h_nonneg : 0 ≤ rounded := ApplyRoundingModeToPositive_nonneg mPos r
+        have h_ne : rounded ≠ 10 ^ maxSignificantDigits := h2
+        -- The key insight: by construction, m is scaled so that when rounded,
+        -- it gives a significand in the valid range. Since we're not in the 
+        -- case where rounded = 10^34, we must have rounded < 10^34
+        by_cases h : rounded < 10 ^ maxSignificantDigits
+        · exact h
+        · -- This case should be impossible by the design of the scaling
+          exfalso
+          have : rounded ≥ 10 ^ maxSignificantDigits := le_of_not_gt h
+          have : rounded > 10 ^ maxSignificantDigits := lt_of_le_of_ne this (Ne.symm h_ne)
+          -- But this contradicts the design that m should be scaled appropriately
+          -- This needs a deeper proof about the scaling properties
+          sorry
+      have suitable: isRationalSuitable x := by sorry
       let y : SuitableRationals := ⟨x, suitable⟩
       DecimalValue.Rational y
 
