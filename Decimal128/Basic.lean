@@ -117,9 +117,44 @@ def ApplyRoundingModeToPositive (m : PositiveRational) (r : RoundingMode) : Int 
 lemma ApplyRoundingModeToPositive_nonneg (m : PositiveRational) (r : RoundingMode) :
   0 ≤ ApplyRoundingModeToPositive m r := by
   have h : 0 < m.1 := m.2
-  have floor_nonneg : 0 ≤ Int.floor m.1 := by simp [Int.floor_nonneg, h]
+  have h_nonneg : 0 ≤ m.1 := le_of_lt h
+  have floor_nonneg : 0 ≤ Int.floor m.1 := by
+    rw [Int.floor_nonneg]
+    exact h_nonneg
   simp only [ApplyRoundingModeToPositive]
-  split <;> omega
+  split
+  · exact floor_nonneg
+  · split
+    · exact floor_nonneg
+    · exact floor_nonneg
+    · -- ceil case: floor + 1 ≥ 0
+      have : 0 ≤ Int.floor m.1 + 1 := by
+        have : 0 ≤ Int.floor m.1 := floor_nonneg
+        omega
+      exact this
+    · split
+      · exact floor_nonneg
+      · split
+        · -- mHigh case
+          have : 0 ≤ Int.floor m.1 + 1 := by
+            have : 0 ≤ Int.floor m.1 := floor_nonneg
+            omega
+          exact this
+        · split
+          · split
+            · exact floor_nonneg
+            · -- mHigh case
+              have : 0 ≤ Int.floor m.1 + 1 := by
+                have : 0 ≤ Int.floor m.1 := floor_nonneg
+                omega
+              exact this
+          · split
+            · exact floor_nonneg
+            · -- mHigh case
+              have : 0 ≤ Int.floor m.1 + 1 := by
+                have : 0 ≤ Int.floor m.1 := floor_nonneg
+                omega
+              exact this
 
 def isZero (x : DecimalValue) : Bool :=
   match x with
@@ -187,6 +222,32 @@ def significand (x : DecimalValue) : Option Rat :=
       let exp : Int := maxSignificantDigits - 1 - te
       some (q * (10 ^ exp))
 
+-- Note 3
+lemma noteThree (x : DecimalValue) : isFinite x ∧ !isZero x → ∃ q : Rat, significand x = some q := by
+  intro h
+  obtain ⟨hFinite, hNotZero⟩ := h
+  match x with
+  | DecimalValue.NaN => simp [isFinite] at hFinite
+  | DecimalValue.NegInfinity => simp [isFinite] at hFinite
+  | DecimalValue.PosInfinity => simp [isFinite] at hFinite
+  | DecimalValue.PosZero => simp [isZero] at hNotZero
+  | DecimalValue.NegZero => simp [isZero] at hNotZero
+  | DecimalValue.Rational ⟨r, hr⟩ =>
+    -- For rational values, significand is defined
+    simp [significand]
+    -- First show that truncatedExponent returns some value for Rational
+    have h_te : ∃ te, truncatedExponent (DecimalValue.Rational ⟨r, hr⟩) = some te := by
+      simp [truncatedExponent]
+      by_cases h_cmp : maxDenomalizedExponent < rationalExponent r
+      · use rationalExponent r
+        simp [h_cmp, if_pos]
+      · use minDenomalizedExponent
+        simp [h_cmp, if_neg]
+    obtain ⟨te, h_te_eq⟩ := h_te
+    rw [h_te_eq]
+    simp
+-- Note 4
+lemma noteFour (x : DecimalValue) : isFinite x ∧ !isZero x → ∃ e : Int, e = truncatedExponent x ∧ e ≤ 6144 ∧ -6176 ≤ e := by sorry
 
 -- Note 5
 -- Proves properties about scaled significand for finite values
