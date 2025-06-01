@@ -5,8 +5,15 @@
       "Bash(rg:*)",
       "Bash(lake build:*)",
       "Bash(grep:*)",
-      "Bash(lean:*)"
+      "Bash(lean:*)",
+      "Bash(git add:*)",
+      "Bash(git checkout:*)",
+      "Bash(lake:*)",
+      "Bash(rm:*)",
+      "Bash(timeout 30 lake build:*)",
+      "Bash(timeout 20 lake build:*)"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": false
 }
