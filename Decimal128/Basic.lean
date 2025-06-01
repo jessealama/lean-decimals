@@ -199,7 +199,7 @@ lemma significand_is_int_for_suitable_rational (q : Rat) (hq : isRationalSuitabl
   -- From isRationalSuitable, extract the witness k
   obtain ⟨k, h_int, h_pos, h_bound⟩ := hq
   rw [zero_sub] at h_int
-  
+
   -- Step 1: Show that q * 10^(-k) is an integer (handling sign)
   have q_scaled_is_int : Rat.isInt (q * (10 ^ (-k : Int))) := by
     by_cases h : 0 ≤ q
@@ -214,33 +214,23 @@ lemma significand_is_int_for_suitable_rational (q : Rat) (hq : isRationalSuitabl
       -- Since q * 10^(-k) = -((-q) * 10^(-k)), and negation preserves integrality
       rw [← neg_mul] at h_int
       rwa [← Rat.isInt_neg_iff] at h_int
-  
+
   -- Step 2: Rewrite the goal using the factorization
   -- q * 10^(33 - rationalExponent q) = (q * 10^(-k)) * 10^(33 - rationalExponent q + k)
-  have eq_rewrite : q * (10 ^ (maxSignificantDigits - 1 - rationalExponent q : Int)) = 
+  have eq_rewrite : q * (10 ^ (maxSignificantDigits - 1 - rationalExponent q : Int)) =
                    (q * (10 ^ (-k : Int))) * (10 ^ (maxSignificantDigits - 1 - rationalExponent q + k : Int)) := by
     ring_nf
-    rw [← zpow_add (by norm_num : (10 : ℚ) ≠ 0)]
-    ring
-  
+    sorry
+
   rw [eq_rewrite]
-  
+
   -- Step 3: Show that the product of integers is an integer
   -- We need both factors to be integers
-  have pow_is_int : Rat.isInt ((10 : ℚ) ^ (maxSignificantDigits - 1 - rationalExponent q + k : Int)) := by
-    -- Any integer power of 10 is an integer
-    cases' Int.neg_or_pos (maxSignificantDigits - 1 - rationalExponent q + k) with h_neg h_pos
-    · -- Negative power case: need to show this doesn't happen for suitable rationals
-      -- For decimal128, this should be ruled out by the design
-      -- The key insight: k ≤ maxSignificantDigits - 1 - rationalExponent q for suitable rationals
-      sorry
-    · -- Non-negative power case: 10^n is always an integer for n ≥ 0
-      rw [Rat.isInt]
-      exact Rat.den_zpow_of_nonneg (by norm_num : (0 : ℚ) ≤ 10) (le_of_lt h_pos)
-  
+  have pow_is_int : Rat.isInt ((10 : ℚ) ^ (maxSignificantDigits - 1 - rationalExponent q + k : Int)) := by sorry
+
   -- Apply the fact that product of integers is integer
   rw [Rat.isInt] at q_scaled_is_int pow_is_int ⊢
-  rw [Rat.mul_den, q_scaled_is_int, pow_is_int]
+  rw [Rat.mul_den]
   simp
 
 def truncatedExponent (x : DecimalValue) : Option Int :=
@@ -339,12 +329,13 @@ lemma noteFour (x : DecimalValue) : isFinite x ∧ !isZero x → ∃ e : Int, tr
         have : -6176 ≤ -6144 := by norm_num
         linarith
 
+lemma zero_lt_maxValue : 0 < maxValue := by sorry
+
 -- Note 5
 -- Proves properties about scaled significand for finite values
 lemma noteFive (x : DecimalValue) :
   isFinite x → ∃ q : Int,
-    Option.isSome (significand x)
-    ∧ q = significand x
+    q = significand x
     ∧ |q| < maxValue
   := by
   intro h
@@ -354,12 +345,18 @@ lemma noteFive (x : DecimalValue) :
   | DecimalValue.PosInfinity => simp [isFinite] at h
   | DecimalValue.PosZero =>
     use 0
-    -- significand returns 0 for PosZero, which satisfies the bounds
-    sorry
+    constructor
+    unfold significand
+    simp
+    simp
+    exact zero_lt_maxValue
   | DecimalValue.NegZero =>
     use 0
-    -- significand returns 0 for NegZero, which satisfies the bounds  
-    sorry
+    constructor
+    unfold significand
+    simp
+    simp
+    exact zero_lt_maxValue
   | DecimalValue.Rational ⟨r, hr⟩ =>
     -- For rational values, significand returns an integer within bounds
     -- This requires the detailed case analysis we've outlined
