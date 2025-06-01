@@ -366,7 +366,10 @@ def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : 
     let mPos : PositiveRational := ⟨m, by 
       have hv_pos : 0 < v.1 := v.2
       have h_rat10_pos : 0 < rat10 := by simp [rat10]
-      have h_pow_pos : 0 < rat10 ^ (0 - te) := by sorry -- powers of positive rationals are positive
+      have h_pow_pos : 0 < rat10 ^ (0 - te) := by
+        -- For any positive rational p and integer n, p^n > 0
+        apply zpow_pos
+        exact h_rat10_pos
       exact mul_pos hv_pos h_pow_pos⟩
     let rounded := ApplyRoundingModeToPositive mPos r
     if h1 : rounded = 0
