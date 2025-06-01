@@ -204,9 +204,11 @@ def truncatedExponent (x : DecimalValue) : Option Int :=
   | DecimalValue.NegZero => minNormalizedExponent
   | DecimalValue.Rational ⟨q, _⟩ =>
     let e := rationalExponent q
-    if e > maxDenomalizedExponent
-    then some e
-    else some minDenomalizedExponent
+    if e < maxDenomalizedExponent
+    then some maxDenomalizedExponent
+    else if e > maxNormalizedExponent
+    then some maxNormalizedExponent
+    else some e
 
 def significand (x : DecimalValue) : Option Rat :=
   match x with
@@ -238,16 +240,61 @@ lemma noteThree (x : DecimalValue) : isFinite x ∧ !isZero x → ∃ q : Rat, s
     -- First show that truncatedExponent returns some value for Rational
     have h_te : ∃ te, truncatedExponent (DecimalValue.Rational ⟨r, hr⟩) = some te := by
       simp [truncatedExponent]
-      by_cases h_cmp : maxDenomalizedExponent < rationalExponent r
+      split_ifs with h1 h2
+      · use maxDenomalizedExponent
+      · use maxNormalizedExponent
       · use rationalExponent r
-        simp [h_cmp, if_pos]
-      · use minDenomalizedExponent
-        simp [h_cmp, if_neg]
     obtain ⟨te, h_te_eq⟩ := h_te
     rw [h_te_eq]
     simp
 -- Note 4
-lemma noteFour (x : DecimalValue) : isFinite x ∧ !isZero x → ∃ e : Int, e = truncatedExponent x ∧ e ≤ 6144 ∧ -6176 ≤ e := by sorry
+lemma noteFour (x : DecimalValue) : isFinite x ∧ !isZero x → ∃ e : Int, truncatedExponent x = some e ∧ e ≤ 6144 ∧ -6176 ≤ e := by
+  intro h
+  obtain ⟨hFinite, hNotZero⟩ := h
+  match x with
+  | DecimalValue.NaN => simp [isFinite] at hFinite
+  | DecimalValue.NegInfinity => simp [isFinite] at hFinite
+  | DecimalValue.PosInfinity => simp [isFinite] at hFinite
+  | DecimalValue.PosZero => simp [isZero] at hNotZero
+  | DecimalValue.NegZero => simp [isZero] at hNotZero
+  | DecimalValue.Rational ⟨q, hq⟩ =>
+    -- For rational values, truncatedExponent is defined and clamped
+    simp [truncatedExponent]
+    split_ifs with h1 h2
+    · -- Case: e < maxDenomalizedExponent, returns maxDenomalizedExponent
+      use maxDenomalizedExponent
+      refine ⟨rfl, ?_, ?_⟩
+      · -- maxDenomalizedExponent = -6144 ≤ maxNormalizedExponent = 6144
+        simp [maxDenomalizedExponent, maxNormalizedExponent]
+      · -- -6176 ≤ maxDenomalizedExponent = -6144
+        simp [minDenomalizedExponent, maxDenomalizedExponent]
+    · -- Case: e > maxNormalizedExponent, returns maxNormalizedExponent
+      use maxNormalizedExponent
+      refine ⟨rfl, ?_, ?_⟩
+      · -- maxNormalizedExponent ≤ maxNormalizedExponent
+        rfl
+      · -- -6176 ≤ maxNormalizedExponent = 6144
+        simp [minDenomalizedExponent, maxNormalizedExponent]
+    · -- Case: maxDenomalizedExponent ≤ e ≤ maxNormalizedExponent, returns e
+      use rationalExponent q
+      refine ⟨?_, ?_, ?_⟩
+      · -- truncatedExponent returns rationalExponent q
+        rfl
+      · -- e ≤ maxNormalizedExponent (6144)
+        have : ¬(maxNormalizedExponent < rationalExponent q) := h2
+        have : rationalExponent q ≤ maxNormalizedExponent := le_of_not_lt this
+        have h_max_norm : maxNormalizedExponent = 6144 := by rfl
+        rw [h_max_norm] at this
+        exact this
+      · -- -6176 ≤ e
+        have : ¬(rationalExponent q < maxDenomalizedExponent) := h1
+        have : maxDenomalizedExponent ≤ rationalExponent q := le_of_not_lt this
+        have h_max_denorm : maxDenomalizedExponent = -6144 := by rfl
+        have h_min_denorm : minDenomalizedExponent = -6176 := by rfl
+        rw [h_max_denorm] at this
+        -- We have -6144 ≤ rationalExponent q, need to show -6176 ≤ rationalExponent q
+        have : -6176 ≤ -6144 := by norm_num
+        linarith
 
 -- Note 5
 -- Proves properties about scaled significand for finite values
@@ -281,11 +328,10 @@ lemma noteFive (x : DecimalValue) :
     have h_te_some : ∃ te, truncatedExponent (DecimalValue.Rational ⟨r, hr⟩) = some te := by
       simp [truncatedExponent]
       -- truncatedExponent always returns some value for Rational
-      by_cases h_cmp : maxDenomalizedExponent < rationalExponent r
+      split_ifs with h1 h2
+      · use maxDenomalizedExponent
+      · use maxNormalizedExponent
       · use rationalExponent r
-        simp [h_cmp, if_pos]
-      · use minDenomalizedExponent
-        simp [h_cmp, if_neg]
     obtain ⟨te, h_te⟩ := h_te_some
     -- Now we can compute the scaled significand
     let exp := maxSignificantDigits - 1 - te
