@@ -199,3 +199,7 @@ theorem mantissaCorrect (p : Rat) :
   use h2
   simp [mantissa]
   rfl
+
+-- Proves that maxValue is positive
+theorem zero_lt_maxValue : 0 < maxValue := by
+  norm_num [maxValue, maxSignificantDigits]
