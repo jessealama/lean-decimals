@@ -9,6 +9,13 @@ def isRationalSuitable (v : Rat) : Prop :=
   ∧ |v| > 0
   ∧ |v| < maxValue
 
+-- Proves that the result of RoundPositiveToDecimal128Domain construction is suitable
+-- when rounded is positive and less than 10^maxSignificantDigits
+lemma roundedResultSuitable (rounded : Int) (te : Int) :
+  0 < rounded → rounded < 10 ^ maxSignificantDigits →
+  isRationalSuitable (rounded * (10 : Rat) ^ te) := by
+  sorry
+
 theorem negationPreservesSuitability (v : Rat) :
   isRationalSuitable v → isRationalSuitable (-v)
   := by
@@ -105,6 +112,14 @@ def ApplyRoundingModeToPositive (m : PositiveRational) (r : RoundingMode) : Int 
                        | _ => (if mLow % 2 == 0
                                  then mLow
                                  else mHigh)))
+
+-- ApplyRoundingModeToPositive returns floor or ceiling of positive rational, so result is non-negative
+lemma ApplyRoundingModeToPositive_nonneg (m : PositiveRational) (r : RoundingMode) :
+  0 ≤ ApplyRoundingModeToPositive m r := by
+  have h : 0 < m.1 := m.2
+  have floor_nonneg : 0 ≤ Int.floor m.1 := by simp [Int.floor_nonneg, h]
+  simp only [ApplyRoundingModeToPositive]
+  split <;> omega
 
 def isZero (x : DecimalValue) : Bool :=
   match x with
@@ -231,12 +246,14 @@ lemma noteFive (x : DecimalValue) :
 
       -- This is a fundamental property of the decimal128 format that would
       -- require proving properties about truncatedExponent's design.
+      -- The key is that exp is chosen so that r * 10^exp becomes an integer
+      -- within the valid range for decimal128 significands
       sorry
-    · -- Prove that |r * (10 ^ exp)| < maxCohortValue
+    · -- Prove that |r * (10 ^ exp)| < maxValue
       -- We need to show |r * 10^exp| < 10^34
       -- From hr, we get that isRationalSuitable r, which includes |r| < 10^34
-      -- The scaling factor 10^exp adjusts the magnitude but is chosen carefully
-      -- by truncatedExponent to keep the result within bounds
+      -- The scaling factor 10^exp is chosen by truncatedExponent to ensure
+      -- the result is within the valid significand range
       sorry
 
 def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : DecimalValue :=
@@ -245,14 +262,19 @@ def RoundPositiveToDecimal128Domain (v : PositiveRational) (r : RoundingMode) : 
     let e := rationalExponent v'
     let te : Int := max (e - (maxSignificantDigits - 1)) minDenomalizedExponent
     let m : Rat := v' * (rat10 ^ (0 - te))
-    if rounded = 0
+    if h1 : rounded = 0
     then DecimalValue.PosZero
-    else if rounded = 10 ^ maxSignificantDigits
+    else if h2 : rounded = 10 ^ maxSignificantDigits
     then DecimalValue.PosInfinity
     else
       let x : Rat := rounded * (10 ^ te)
       -- Proves that the constructed rational from significand and exponent is suitable
-      have suitable: isRationalSuitable x := by sorry
+      have h_pos : 0 < rounded := by
+        exact lt_of_le_of_ne (ApplyRoundingModeToPositive_nonneg v r) (Ne.symm h1)
+      have h_bound : rounded < 10 ^ maxSignificantDigits := by
+        -- h2 gives us rounded ≠ 10 ^ maxSignificantDigits
+        sorry
+      have suitable: isRationalSuitable x := roundedResultSuitable rounded te h_pos h_bound
       let y : SuitableRationals := ⟨x, suitable⟩
       DecimalValue.Rational y
 
