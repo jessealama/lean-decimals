@@ -3,6 +3,10 @@ import Decimal128.Constants
 
 def maxValue : Rat := 10 ^ maxSignificantDigits
 
+-- Proves that maxValue is positive
+theorem zero_lt_maxValue : 0 < maxValue := by
+  norm_num [maxValue, maxSignificantDigits]
+
 def isRationalSuitable (v : Rat) : Prop :=
   ∃ q : Int,
   Rat.isInt (|v| * (10 ^ (0 - q)))
@@ -328,8 +332,6 @@ lemma noteFour (x : DecimalValue) : isFinite x ∧ !isZero x → ∃ e : Int, tr
         -- We have -6144 ≤ rationalExponent q, need to show -6176 ≤ rationalExponent q
         have : -6176 ≤ -6144 := by norm_num
         linarith
-
-lemma zero_lt_maxValue : 0 < maxValue := by sorry
 
 -- Note 5
 -- Proves properties about scaled significand for finite values
