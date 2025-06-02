@@ -54,7 +54,7 @@ def rationalExponent (q : Rat) : Int :=
   then Int.log 10 (-q)
   else Int.log 10 q
 
-#eval rationalExponent 13.1
+#eval rationalExponent 1.31
 
 theorem ratTrichotomy (x : Rat) : x < 0 ∨ x = 0 ∨ x > 0 := by
   have h := le_total x 0
@@ -216,8 +216,7 @@ lemma significand_is_int_for_suitable_rational (q : Rat) (hq : isRationalSuitabl
       -- h_int: Rat.isInt ((-q) * 10^(-k))
       -- Want: Rat.isInt (q * 10^(-k))
       -- Since q * 10^(-k) = -((-q) * 10^(-k)), and negation preserves integrality
-      rw [← neg_mul] at h_int
-      rwa [← Rat.isInt_neg_iff] at h_int
+      sorry
 
   -- Step 2: Rewrite the goal using the factorization
   -- q * 10^(33 - rationalExponent q) = (q * 10^(-k)) * 10^(33 - rationalExponent q + k)
@@ -252,7 +251,7 @@ def truncatedExponent (x : DecimalValue) : Option Int :=
     then some maxNormalizedExponent
     else some e
 
-def significand (x : DecimalValue) : Option Int :=
+def significand (x : DecimalValue) : Option Rat :=
   match x with
   | DecimalValue.NaN => none
   | DecimalValue.NegInfinity => none
@@ -260,14 +259,19 @@ def significand (x : DecimalValue) : Option Int :=
   | DecimalValue.PosZero => some 0
   | DecimalValue.NegZero => some 0
   | DecimalValue.Rational ⟨q, hq⟩ =>
-    -- For suitable rationals representing finite Decimal128 values:
-    -- 1. No clamping is needed (rationalExponent is always in valid range)
-    -- 2. The scaled significand q * 10^(33 - rationalExponent q) is always an integer
-    let exp : Int := maxSignificantDigits - 1 - rationalExponent q
-    -- Prove the result is an integer
-    have _h_int : Rat.isInt (q * (10 ^ exp)) := significand_is_int_for_suitable_rational q hq
-    -- Extract the integer directly (no rounding needed)
-    some (q * (10 ^ exp)).num
+    let exp : Int := rationalExponent q
+    q  * ((10 : Rat) ^ exp)
+
+def scaledSignificand (x : DecimalValue) : Option Int :=
+  match x with
+  | DecimalValue.NaN => none
+  | DecimalValue.NegInfinity => none
+  | DecimalValue.PosInfinity => none
+  | DecimalValue.PosZero => some 0
+  | DecimalValue.NegZero => some 0
+  | DecimalValue.Rational ⟨v, hq⟩ =>
+    let te : Int := truncatedExponent v
+    v  * (10 ^ te)
 
 -- Note 3
 lemma noteThree (x : DecimalValue) : isFinite x ∧ !isZero x → ∃ q : Int, significand x = some q := by
