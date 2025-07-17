@@ -112,7 +112,8 @@ def ApplyRoundingModeToPositive (m : PositiveRational) (r : RoundingMode) : Int 
 
 -- ApplyRoundingModeToPositive returns floor or ceiling of positive rational, so result is non-negative
 lemma ApplyRoundingModeToPositive_nonneg (m : PositiveRational) (r : RoundingMode) :
-  0 ≤ ApplyRoundingModeToPositive m r := by
+  0 ≤ ApplyRoundingModeToPositive m r :=
+by
   have h : 0 < m.1 := m.2
   have h_nonneg : 0 ≤ m.1 := le_of_lt h
   have floor_nonneg : 0 ≤ Int.floor m.1 := by
@@ -273,7 +274,9 @@ def scaledSignificand (x : DecimalValue) : Option Int :=
     | some te => some ((v * (10 ^ te)).num)
 
 -- Note 3
-lemma noteThree (x : DecimalValue) : isFinite x ∧ !isZero x → ∃ q : Int, scaledSignificand x = some q := by
+lemma noteThree (x : DecimalValue) :
+  isFinite x ∧ !isZero x → ∃ q : Int, scaledSignificand x = some q :=
+by
   intro h
   obtain ⟨hFinite, hNotZero⟩ := h
   match x with
