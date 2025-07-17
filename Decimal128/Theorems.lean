@@ -349,6 +349,82 @@ theorem divisionCorrect (p : Rat) (q : Rat) :
   simp [divide]
   exact h_round
 
+-- Division zero theorems
+theorem divZeroByZero :
+  divide DecimalValue.PosZero DecimalValue.PosZero = DecimalValue.NaN ∧
+  divide DecimalValue.PosZero DecimalValue.NegZero = DecimalValue.NaN ∧
+  divide DecimalValue.NegZero DecimalValue.PosZero = DecimalValue.NaN ∧
+  divide DecimalValue.NegZero DecimalValue.NegZero = DecimalValue.NaN
+:= by simp [divide]
+
+-- Proves zero divided by non-zero follows sign rules
+theorem divZeroByNonZero (x y : DecimalValue) :
+  isZero x → ¬isZero y → y ≠ DecimalValue.NaN →
+  ¬(y = DecimalValue.PosInfinity ∨ y = DecimalValue.NegInfinity) →
+  isZero (divide x y) ∧
+  (isNegative x ≠ isNegative y → divide x y = DecimalValue.NegZero) ∧
+  (isNegative x = isNegative y → divide x y = DecimalValue.PosZero)
+:= by
+  intro hx hy_nonzero hy_nan hy_finite
+  cases x with
+  | PosZero => cases y with
+    | PosZero => simp [isZero] at hy_nonzero
+    | NegZero => simp [isZero] at hy_nonzero
+    | NaN => contradiction
+    | PosInfinity => simp at hy_finite
+    | NegInfinity => simp at hy_finite
+    | Rational _ => simp [divide, isZero, isNegative]
+  | NegZero => cases y with
+    | PosZero => simp [isZero] at hy_nonzero
+    | NegZero => simp [isZero] at hy_nonzero
+    | NaN => contradiction
+    | PosInfinity => simp at hy_finite
+    | NegInfinity => simp at hy_finite
+    | Rational _ => simp [divide, isZero, isNegative]
+  | _ => simp [isZero] at hx
+
+-- Proves non-zero divided by zero gives signed infinity
+theorem divNonZeroByZero (x z : DecimalValue) :
+  ¬isZero x → x ≠ DecimalValue.NaN → 
+  ¬(x = DecimalValue.PosInfinity ∨ x = DecimalValue.NegInfinity) →
+  isZero z →
+  (z = DecimalValue.PosZero → divide x z = if isNegative x then DecimalValue.NegInfinity else DecimalValue.PosInfinity) ∧
+  (z = DecimalValue.NegZero → divide x z = if isNegative x then DecimalValue.PosInfinity else DecimalValue.NegInfinity)
+:= by
+  intro hx_nonzero hx_nan hx_finite hz
+  cases z with
+  | PosZero => simp [divide, isNegative]
+  | NegZero => simp [divide, isNegative]
+  | _ => simp [isZero] at hz
+
+-- Proves zero divided by infinity gives correctly signed zero
+theorem divZeroByInfinity (x : DecimalValue) :
+  isZero x →
+  (divide x DecimalValue.PosInfinity = if isNegative x then DecimalValue.NegZero else DecimalValue.PosZero) ∧
+  (divide x DecimalValue.NegInfinity = if isNegative x then DecimalValue.PosZero else DecimalValue.NegZero)
+:= by
+  intro hx
+  cases x with
+  | PosZero => simp [divide, isNegative]
+  | NegZero => simp [divide, isNegative]
+  | _ => simp [isZero] at hx
+
+-- Proves that when two suitable rationals divide to zero, result has correct sign
+theorem divisionZeroResult (p : Rat) (q : Rat) :
+  isRationalSuitable p
+  → isRationalSuitable q
+  → p / q = 0
+  → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable q),
+    isZero (divide (DecimalValue.Rational ⟨p, s1⟩)
+                   (DecimalValue.Rational ⟨q, s2⟩))
+:= by
+  intro hp hq h_div
+  use hp, hq
+  simp [divide]
+  rw [h_div]
+  simp [RoundToDecimal128Domain]
+  simp [isZero]
+
 -- Proves that when remainder is zero, the result respects IEEE 754 signed zero semantics
 theorem remainderZeroCorrect (p : Rat) (q : Rat) :
   isRationalSuitable p

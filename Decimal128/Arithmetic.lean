@@ -139,7 +139,7 @@ def divide (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   | _, DecimalValue.NegInfinity => if isNegative x then DecimalValue.PosZero else DecimalValue.NegZero
   | DecimalValue.PosZero, DecimalValue.PosZero => DecimalValue.NaN
   | DecimalValue.NegZero, DecimalValue.PosZero => DecimalValue.NaN
-  | _, DecimalValue.PosZero => if isNegative x then DecimalValue.NegInfinity else if isNegative x then DecimalValue.NegInfinity else DecimalValue.PosInfinity
+  | _, DecimalValue.PosZero => if isNegative x then DecimalValue.NegInfinity else DecimalValue.PosInfinity
   | DecimalValue.PosZero, DecimalValue.NegZero => DecimalValue.NaN
   | DecimalValue.NegZero, DecimalValue.NegZero => DecimalValue.NaN
   | _, DecimalValue.NegZero => if isNegative x then DecimalValue.PosInfinity else DecimalValue.NegInfinity
@@ -150,6 +150,13 @@ def divide (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
 
 instance : HDiv DecimalValue DecimalValue DecimalValue where
   hDiv := divide
+
+-- Division follows IEEE 754 sign rules:
+-- Zero/non-zero: sign follows standard rules (0/pos = +0, -0/pos = -0, etc.)
+-- Non-zero/zero: produces signed infinity (pos/0 = +∞, pos/-0 = -∞, etc.)
+-- Zero/zero: always NaN
+-- Infinity/infinity: always NaN
+-- When rationals underflow to zero, sign follows standard rules
 
 -- it should be possible for n to be positive or negative infinity, or even NaN
 def scale10 (x : DecimalValue) (n : Int) : DecimalValue :=
