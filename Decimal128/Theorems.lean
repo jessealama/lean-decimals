@@ -214,28 +214,34 @@ theorem subtractionZeroResult (p : Rat) (q : Rat) :
   simp [RoundToDecimal128Domain]
   simp [isZero]
 
--- Proves that zero minus any value equals the negation of that value
-theorem subZeroValue (y : DecimalValue) :
+-- Proves that zero minus non-zero value equals the negation
+theorem subZeroNonZero (y : DecimalValue) :
+  ¬isZero y → y ≠ DecimalValue.NaN → 
+  ¬(y = DecimalValue.PosInfinity ∨ y = DecimalValue.NegInfinity) →
   sub DecimalValue.PosZero y = negate y
 := by
+  intro hy_nonzero hy_nan hy_finite
   cases y with
-  | NaN => rfl
-  | PosInfinity => rfl
-  | NegInfinity => rfl
-  | PosZero => rfl
-  | NegZero => rfl
+  | NaN => contradiction
+  | PosInfinity => simp at hy_finite
+  | NegInfinity => simp at hy_finite
+  | PosZero => simp [isZero] at hy_nonzero
+  | NegZero => simp [isZero] at hy_nonzero
   | Rational _ => rfl
 
--- Proves that negative zero minus any value equals the negation of that value
-theorem subNegZeroValue (y : DecimalValue) :
+-- Proves that negative zero minus non-zero value equals the negation  
+theorem subNegZeroNonZero (y : DecimalValue) :
+  ¬isZero y → y ≠ DecimalValue.NaN → 
+  ¬(y = DecimalValue.PosInfinity ∨ y = DecimalValue.NegInfinity) →
   sub DecimalValue.NegZero y = negate y
 := by
+  intro hy_nonzero hy_nan hy_finite
   cases y with
-  | NaN => rfl
-  | PosInfinity => rfl
-  | NegInfinity => rfl
-  | PosZero => rfl
-  | NegZero => rfl
+  | NaN => contradiction
+  | PosInfinity => simp at hy_finite
+  | NegInfinity => simp at hy_finite
+  | PosZero => simp [isZero] at hy_nonzero
+  | NegZero => simp [isZero] at hy_nonzero
   | Rational _ => rfl
 
 -- Proves that multiplying two suitable rationals produces the expected result
@@ -292,27 +298,42 @@ theorem multiplyZeroSignRule (x y : DecimalValue) :
     | _ => simp [isZero] at hy
   | _ => simp [isZero] at hx
 
--- Proves multiplication by zero always gives zero (with correct sign)
+-- Proves multiplication by zero gives zero (except NaN and infinity cases)
 theorem multiplyByZero (x : DecimalValue) (z : DecimalValue) :
-  isZero z → isZero (multiply x z)
+  isZero z → x ≠ DecimalValue.NaN → 
+  x ≠ DecimalValue.PosInfinity → x ≠ DecimalValue.NegInfinity →
+  isZero (multiply x z)
 := by
-  intro hz
-  cases x with
-  | NaN => simp [multiply]
-  | PosInfinity => simp [multiply, hz, isZero]
-  | NegInfinity => simp [multiply, hz, isZero]
-  | PosZero => cases z with
+  intro hz hx_nan hx_pinf hx_ninf
+  cases z with
+  | NaN => simp [isZero] at hz
+  | PosInfinity => simp [isZero] at hz
+  | NegInfinity => simp [isZero] at hz
+  | Rational _ => simp [isZero] at hz
+  | PosZero => 
+    cases x with
+    | NaN => contradiction
+    | PosInfinity => contradiction
+    | NegInfinity => contradiction
     | PosZero => simp [multiply, isZero]
     | NegZero => simp [multiply, isZero]
-    | _ => simp [isZero] at hz
-  | NegZero => cases z with
+    | Rational r => 
+      simp [multiply]
+      split_ifs with h
+      · simp [isZero]
+      · simp [isZero]
+  | NegZero =>
+    cases x with
+    | NaN => contradiction
+    | PosInfinity => contradiction  
+    | NegInfinity => contradiction
     | PosZero => simp [multiply, isZero]
     | NegZero => simp [multiply, isZero]
-    | _ => simp [isZero] at hz
-  | Rational _ => cases z with
-    | PosZero => simp [multiply, isZero, isNegative]
-    | NegZero => simp [multiply, isZero, isNegative]
-    | _ => simp [isZero] at hz
+    | Rational r => 
+      simp [multiply]
+      split_ifs with h
+      · simp [isZero]
+      · simp [isZero]
 
 -- Proves that when two suitable rationals multiply to zero, result has correct sign
 -- Note: RoundToDecimal128Domain returns NegZero when negative value rounds to zero
@@ -373,14 +394,30 @@ theorem divZeroByNonZero (x y : DecimalValue) :
     | NaN => contradiction
     | PosInfinity => simp at hy_finite
     | NegInfinity => simp at hy_finite
-    | Rational _ => simp [divide, isZero, isNegative]
+    | Rational r => 
+      simp [divide]
+      split_ifs with h
+      · constructor
+        · simp [isZero]
+        · simp [isNegative]
+      · constructor
+        · simp [isZero]
+        · simp [isNegative]
   | NegZero => cases y with
     | PosZero => simp [isZero] at hy_nonzero
     | NegZero => simp [isZero] at hy_nonzero
     | NaN => contradiction
     | PosInfinity => simp at hy_finite
     | NegInfinity => simp at hy_finite
-    | Rational _ => simp [divide, isZero, isNegative]
+    | Rational r => 
+      simp [divide]
+      split_ifs with h
+      · constructor
+        · simp [isZero]
+        · simp [isNegative]
+      · constructor
+        · simp [isZero]
+        · simp [isNegative]
   | _ => simp [isZero] at hx
 
 -- Proves non-zero divided by zero gives signed infinity
@@ -388,14 +425,31 @@ theorem divNonZeroByZero (x z : DecimalValue) :
   ¬isZero x → x ≠ DecimalValue.NaN → 
   ¬(x = DecimalValue.PosInfinity ∨ x = DecimalValue.NegInfinity) →
   isZero z →
-  (z = DecimalValue.PosZero → divide x z = if isNegative x then DecimalValue.NegInfinity else DecimalValue.PosInfinity) ∧
-  (z = DecimalValue.NegZero → divide x z = if isNegative x then DecimalValue.PosInfinity else DecimalValue.NegInfinity)
+  (z = DecimalValue.PosZero → 
+    divide x z = if isNegative x then DecimalValue.NegInfinity else DecimalValue.PosInfinity) ∧
+  (z = DecimalValue.NegZero → 
+    divide x z = if isNegative x then DecimalValue.PosInfinity else DecimalValue.NegInfinity)
 := by
   intro hx_nonzero hx_nan hx_finite hz
-  cases z with
-  | PosZero => simp [divide, isNegative]
-  | NegZero => simp [divide, isNegative]
-  | _ => simp [isZero] at hz
+  constructor
+  · intro h_pz
+    rw [h_pz]
+    cases x with
+    | NaN => contradiction
+    | PosInfinity => simp at hx_finite
+    | NegInfinity => simp at hx_finite
+    | PosZero => simp [isZero] at hx_nonzero
+    | NegZero => simp [isZero] at hx_nonzero
+    | Rational _ => simp [divide]
+  · intro h_nz
+    rw [h_nz]
+    cases x with
+    | NaN => contradiction
+    | PosInfinity => simp at hx_finite
+    | NegInfinity => simp at hx_finite
+    | PosZero => simp [isZero] at hx_nonzero
+    | NegZero => simp [isZero] at hx_nonzero
+    | Rational _ => simp [divide]
 
 -- Proves zero divided by infinity gives correctly signed zero
 theorem divZeroByInfinity (x : DecimalValue) :
