@@ -178,6 +178,66 @@ theorem subtractionCorrect (p : Rat) (q : Rat) :
   simp [sub]
   exact h_round
 
+-- Proves key subtraction zero cases
+theorem subNegZeroPosZero :
+  sub DecimalValue.NegZero DecimalValue.PosZero = DecimalValue.NegZero
+:= by rfl
+
+theorem subNegZeroNegZero :
+  sub DecimalValue.NegZero DecimalValue.NegZero = DecimalValue.PosZero
+:= by rfl
+
+theorem subPosZeroPosZero :
+  sub DecimalValue.PosZero DecimalValue.PosZero = DecimalValue.PosZero
+:= by rfl
+
+theorem subPosZeroNegZero :
+  sub DecimalValue.PosZero DecimalValue.NegZero = DecimalValue.PosZero
+:= by rfl
+
+-- Proves that when two suitable rationals have equal values, subtraction returns zero
+-- Note: Like addition, when two non-zero rationals subtract to exactly zero,
+-- the result is always positive zero. This matches JavaScript behavior.
+theorem subtractionZeroResult (p : Rat) (q : Rat) :
+  isRationalSuitable p
+  → isRationalSuitable q
+  → p - q = 0
+  → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable q),
+    isZero (sub (DecimalValue.Rational ⟨p, s1⟩)
+                (DecimalValue.Rational ⟨q, s2⟩))
+:= by
+  intro hp hq h_diff
+  use hp, hq
+  simp [sub]
+  -- RoundToDecimal128Domain returns PosZero when given 0
+  rw [h_diff]
+  simp [RoundToDecimal128Domain]
+  simp [isZero]
+
+-- Proves that zero minus any value equals the negation of that value
+theorem subZeroValue (y : DecimalValue) :
+  sub DecimalValue.PosZero y = negate y
+:= by
+  cases y with
+  | NaN => rfl
+  | PosInfinity => rfl
+  | NegInfinity => rfl
+  | PosZero => rfl
+  | NegZero => rfl
+  | Rational _ => rfl
+
+-- Proves that negative zero minus any value equals the negation of that value
+theorem subNegZeroValue (y : DecimalValue) :
+  sub DecimalValue.NegZero y = negate y
+:= by
+  cases y with
+  | NaN => rfl
+  | PosInfinity => rfl
+  | NegInfinity => rfl
+  | PosZero => rfl
+  | NegZero => rfl
+  | Rational _ => rfl
+
 -- Proves that multiplying two suitable rationals produces the expected result
 theorem multiplicationCorrect (p : Rat) (q : Rat) :
   isRationalSuitable p

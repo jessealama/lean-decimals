@@ -82,15 +82,22 @@ def sub (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   | DecimalValue.NegZero, DecimalValue.NegZero => DecimalValue.PosZero
   | DecimalValue.PosZero, DecimalValue.NegZero => DecimalValue.PosZero
   | DecimalValue.NegZero, DecimalValue.PosZero => DecimalValue.NegZero
-  | DecimalValue.PosZero, _ => y
+  | DecimalValue.PosZero, _ => negate y
   | _, DecimalValue.PosZero => x
-  | DecimalValue.NegZero, _ => y
+  | DecimalValue.NegZero, _ => negate y
   | _, DecimalValue.NegZero => x
   | DecimalValue.Rational ⟨p, _⟩, DecimalValue.Rational ⟨q, _⟩ =>
     RoundToDecimal128Domain (p - q) RoundingMode.halfEven
 
 instance : HSub DecimalValue DecimalValue DecimalValue where
   hSub := sub
+
+-- Subtraction behavior with zeros matches JavaScript:
+-- -0 - 0 = -0 (the only case that produces -0)
+-- -0 - -0 = +0
+-- 0 - 0 = +0
+-- 0 - -0 = +0
+-- When two non-zero rationals subtract to zero, result is always +0
 
 def multiply (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   match x, y with
