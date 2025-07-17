@@ -16,7 +16,7 @@ lemma truncateCorrect (x : Rat) :
 := by
   simp only [truncate]
   split_ifs with h
-  · simp [sub_eq_neg_add, zero_add]
+  · simp [sub_eq_neg_add]
   · rfl
 
 -- Defines the mathematical remainder for rationals as p - truncate(p/q) * q
