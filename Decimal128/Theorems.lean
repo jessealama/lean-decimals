@@ -34,8 +34,12 @@ lemma remainderRoundingPreserves (p q : Rat) (hq : q ≠ 0) :
   let r := ratRemainder p q
   isRationalSuitable r →
   ∃ (s : isRationalSuitable r),
-    (if r = 0 ∧ p < 0 then DecimalValue.NegZero else RoundToDecimal128Domain r RoundingMode.halfEven)
-    = if r = 0 ∧ p < 0 then DecimalValue.NegZero else DecimalValue.Rational ⟨r, s⟩
+    (if r = 0 ∧ p < 0
+    then DecimalValue.NegZero
+    else RoundToDecimal128Domain r RoundingMode.halfEven)
+    = if r = 0 ∧ p < 0
+      then DecimalValue.NegZero
+      else DecimalValue.Rational ⟨r, s⟩
 := by sorry
 
 -- Proves that negating a suitable rational produces the expected result
@@ -61,6 +65,29 @@ theorem absoluteValueCorrect (p : Rat) :
   intro ⟨h1, h2⟩
   use h1, h2
   simp [absoluteValue]
+
+-- Proves that absolute value of positive zero is positive zero
+theorem absoluteValuePosZero :
+  absoluteValue DecimalValue.PosZero = DecimalValue.PosZero
+:= by rfl
+
+-- Proves that absolute value of negative zero is positive zero
+theorem absoluteValueNegZero :
+  absoluteValue DecimalValue.NegZero = DecimalValue.PosZero
+:= by rfl
+
+-- Proves that absolute value always returns positive zero for any zero
+theorem absoluteValueZeroAlwaysPosZero (x : DecimalValue) :
+  isZero x → absoluteValue x = DecimalValue.PosZero
+:= by
+  intro h
+  cases x with
+  | PosZero => rfl
+  | NegZero => rfl
+  | NaN => simp [isZero] at h
+  | PosInfinity => simp [isZero] at h
+  | NegInfinity => simp [isZero] at h
+  | Rational _ => simp [isZero] at h
 
 -- Proves that adding two suitable rationals produces the expected result
 theorem additionCorrect (p : Rat) (q : Rat) :
@@ -134,6 +161,16 @@ theorem divisionCorrect (p : Rat) (q : Rat) :
   simp [divide]
   exact h_round
 
+-- Proves that when remainder is zero, the result respects IEEE 754 signed zero semantics
+theorem remainderZeroCorrect (p : Rat) (q : Rat) :
+  isRationalSuitable p
+∧ isRationalSuitable q
+∧ ratRemainder p q = 0
+→ ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable q),
+  isZero (remainder (DecimalValue.Rational ⟨p, s1⟩)
+      (DecimalValue.Rational ⟨q, s2⟩))
+:= by sorry
+
 -- Proves that remainder of two suitable rationals produces the expected result
 -- Note: Rat does have a % operator from its Field/EuclideanDomain instance,
 -- but it always returns 0 (since division is exact in a field).
@@ -148,11 +185,27 @@ theorem remainderCorrect (p : Rat) (q : Rat) :
   = DecimalValue.Rational ⟨ratRemainder p q, s3⟩
 := by
   intro ⟨h1, h2, h3⟩
-  use h1, h2
-  -- The remainder function computes exactly ratRemainder p q
-  -- We need to handle the special case where remainder is 0 and p < 0
-  simp [remainder, ratRemainder]
-  -- This requires the remainderRoundingPreserves lemma
+  -- Since q ≠ 0 (otherwise it wouldn't be suitable)
+  have hq : q ≠ 0 := by
+    obtain ⟨_, _, hpos, _⟩ := h2
+    exact abs_pos.mp hpos
+  -- Apply the remainderRoundingPreserves lemma
+  obtain ⟨s3, h_round⟩ := remainderRoundingPreserves p q hq h3
+  -- Provide all three witnesses
+  use h1, h2, s3
+  -- Now prove the equality
+  simp only [remainder]
+  -- Since ratRemainder p q is suitable, it's not zero
+  have h_nonzero : ratRemainder p q ≠ 0 := by
+    intro h_eq
+    rw [h_eq] at h3
+    -- h3 says isRationalSuitable 0, which requires |0| > 0
+    obtain ⟨_, _, habs, _⟩ := h3
+    -- But |0| = 0, not > 0
+    rw [abs_zero] at habs
+    -- This gives us 0 > 0, which is false
+    exact (lt_irrefl 0) habs
+  -- The rest requires careful matching of the if-then-else expression
   sorry
 
 -- Proves that scaling by powers of 10 produces the expected result
