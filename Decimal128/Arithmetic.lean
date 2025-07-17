@@ -147,7 +147,7 @@ def scale10 (x : DecimalValue) (n : Int) : DecimalValue :=
   | DecimalValue.NegZero => DecimalValue.NegZero
   | DecimalValue.Rational ⟨p, _⟩ => RoundToDecimal128Domain (p * (10 ^ n)) RoundingMode.halfEven
 
-private def truncate (x : Rat) : Rat :=
+def truncate (x : Rat) : Rat :=
   if x < 0
   then 0 - Rat.floor (0 - x)
   else Rat.floor x

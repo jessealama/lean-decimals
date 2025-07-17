@@ -13,7 +13,11 @@ lemma roundPreservesSuitable (p : Rat) (r : RoundingMode) :
 -- and ceiling (negated) for negative rationals
 lemma truncateCorrect (x : Rat) :
   truncate x = if x < 0 then -Rat.floor (-x) else Rat.floor x
-:= by rfl
+:= by
+  simp only [truncate]
+  split_ifs with h
+  · simp [sub_eq_neg_add, zero_add]
+  · rfl
 
 -- Defines the mathematical remainder for rationals as p - truncate(p/q) * q
 def ratRemainder (p q : Rat) : Rat :=
@@ -45,7 +49,6 @@ theorem negationCorrect (p : Rat) :
   intro ⟨h1, h2⟩
   use h1, h2
   simp [negate]
-  rfl
 
 -- Proves that absolute value of a suitable rational produces the expected result
 theorem absoluteValueCorrect (p : Rat) :
@@ -58,7 +61,6 @@ theorem absoluteValueCorrect (p : Rat) :
   intro ⟨h1, h2⟩
   use h1, h2
   simp [absoluteValue]
-  rfl
 
 -- Proves that adding two suitable rationals produces the expected result
 theorem additionCorrect (p : Rat) (q : Rat) :
@@ -182,8 +184,6 @@ theorem exponentCorrect (p : Rat) :
   have h2 : isRationalSuitable (rationalExponent p : Rat) := exponentSuitable p h1
   use h2
   simp [exponent]
-  -- The exponent function needs the same proof we just provided
-  congr
 
 -- Proves that mantissa extraction produces the expected result
 theorem mantissaCorrect (p : Rat) :
@@ -198,4 +198,3 @@ theorem mantissaCorrect (p : Rat) :
   have h2 : isRationalSuitable (rationalSignificand p) := significandPreservesSuitability p h1
   use h2
   simp [mantissa]
-  rfl
