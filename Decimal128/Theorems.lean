@@ -140,7 +140,7 @@ theorem divisionCorrect (p : Rat) (q : Rat) :
 -- Our ratRemainder function implements the truncating remainder we need.
 theorem remainderCorrect (p : Rat) (q : Rat) :
   isRationalSuitable p
-∧ isRationalSuitable q  
+∧ isRationalSuitable q
 ∧ isRationalSuitable (ratRemainder p q)
 → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable q) (s3 : isRationalSuitable (ratRemainder p q)),
   remainder (DecimalValue.Rational ⟨p, s1⟩)
