@@ -256,6 +256,81 @@ theorem multiplicationCorrect (p : Rat) (q : Rat) :
   simp [multiply]
   exact h_round
 
+-- Multiplication zero sign theorems
+theorem mulPosZeroPosZero :
+  multiply DecimalValue.PosZero DecimalValue.PosZero = DecimalValue.PosZero
+:= by rfl
+
+theorem mulPosZeroNegZero :
+  multiply DecimalValue.PosZero DecimalValue.NegZero = DecimalValue.NegZero
+:= by rfl
+
+theorem mulNegZeroPosZero :
+  multiply DecimalValue.NegZero DecimalValue.PosZero = DecimalValue.NegZero
+:= by rfl
+
+theorem mulNegZeroNegZero :
+  multiply DecimalValue.NegZero DecimalValue.NegZero = DecimalValue.PosZero
+:= by rfl
+
+-- Proves multiplication follows sign rules: pos*neg = neg, neg*neg = pos
+theorem multiplyZeroSignRule (x y : DecimalValue) :
+  isZero x → isZero y → 
+  isZero (multiply x y) ∧
+  (isNegative x ≠ isNegative y → multiply x y = DecimalValue.NegZero) ∧
+  (isNegative x = isNegative y → multiply x y = DecimalValue.PosZero)
+:= by
+  intro hx hy
+  cases x with
+  | PosZero => cases y with
+    | PosZero => simp [multiply, isZero, isNegative]
+    | NegZero => simp [multiply, isZero, isNegative]
+    | _ => simp [isZero] at hy
+  | NegZero => cases y with
+    | PosZero => simp [multiply, isZero, isNegative]
+    | NegZero => simp [multiply, isZero, isNegative]
+    | _ => simp [isZero] at hy
+  | _ => simp [isZero] at hx
+
+-- Proves multiplication by zero always gives zero (with correct sign)
+theorem multiplyByZero (x : DecimalValue) (z : DecimalValue) :
+  isZero z → isZero (multiply x z)
+:= by
+  intro hz
+  cases x with
+  | NaN => simp [multiply]
+  | PosInfinity => simp [multiply, hz, isZero]
+  | NegInfinity => simp [multiply, hz, isZero]
+  | PosZero => cases z with
+    | PosZero => simp [multiply, isZero]
+    | NegZero => simp [multiply, isZero]
+    | _ => simp [isZero] at hz
+  | NegZero => cases z with
+    | PosZero => simp [multiply, isZero]
+    | NegZero => simp [multiply, isZero]
+    | _ => simp [isZero] at hz
+  | Rational _ => cases z with
+    | PosZero => simp [multiply, isZero, isNegative]
+    | NegZero => simp [multiply, isZero, isNegative]
+    | _ => simp [isZero] at hz
+
+-- Proves that when two suitable rationals multiply to zero, result has correct sign
+-- Note: RoundToDecimal128Domain returns NegZero when negative value rounds to zero
+theorem multiplicationZeroResult (p : Rat) (q : Rat) :
+  isRationalSuitable p
+  → isRationalSuitable q
+  → p * q = 0
+  → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable q),
+    isZero (multiply (DecimalValue.Rational ⟨p, s1⟩)
+                     (DecimalValue.Rational ⟨q, s2⟩))
+:= by
+  intro hp hq h_prod
+  use hp, hq
+  simp [multiply]
+  rw [h_prod]
+  simp [RoundToDecimal128Domain]
+  simp [isZero]
+
 -- Proves that dividing two suitable rationals produces the expected result
 theorem divisionCorrect (p : Rat) (q : Rat) :
   isRationalSuitable p

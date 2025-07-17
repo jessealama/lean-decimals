@@ -103,20 +103,27 @@ def multiply (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   match x, y with
   | DecimalValue.NaN, _ => DecimalValue.NaN
   | _, DecimalValue.NaN => DecimalValue.NaN
-  | DecimalValue.NegInfinity, _ => if isZero y then DecimalValue.NaN else DecimalValue.NegInfinity
-  | _, DecimalValue.NegInfinity => if isZero x then DecimalValue.NaN else DecimalValue.NegInfinity
-  | DecimalValue.PosInfinity, _ => if isZero y then DecimalValue.NaN else DecimalValue.PosInfinity
-  | _, DecimalValue.PosInfinity => if isZero x then DecimalValue.NaN else DecimalValue.PosInfinity
-  | DecimalValue.PosZero, _ => DecimalValue.PosZero
-  | _, DecimalValue.PosZero => DecimalValue.PosZero
+  | DecimalValue.NegInfinity, _ => if isZero y then DecimalValue.NaN else if isNegative y then DecimalValue.PosInfinity else DecimalValue.NegInfinity
+  | _, DecimalValue.NegInfinity => if isZero x then DecimalValue.NaN else if isNegative x then DecimalValue.PosInfinity else DecimalValue.NegInfinity
+  | DecimalValue.PosInfinity, _ => if isZero y then DecimalValue.NaN else if isNegative y then DecimalValue.NegInfinity else DecimalValue.PosInfinity
+  | _, DecimalValue.PosInfinity => if isZero x then DecimalValue.NaN else if isNegative x then DecimalValue.NegInfinity else DecimalValue.PosInfinity
+  | DecimalValue.PosZero, DecimalValue.PosZero => DecimalValue.PosZero
+  | DecimalValue.PosZero, DecimalValue.NegZero => DecimalValue.NegZero
+  | DecimalValue.NegZero, DecimalValue.PosZero => DecimalValue.NegZero
   | DecimalValue.NegZero, DecimalValue.NegZero => DecimalValue.PosZero
-  | DecimalValue.NegZero, DecimalValue.Rational _ => DecimalValue.PosZero
-  | DecimalValue.Rational _, DecimalValue.NegZero => DecimalValue.PosZero
+  | DecimalValue.PosZero, _ => if isNegative y then DecimalValue.NegZero else DecimalValue.PosZero
+  | _, DecimalValue.PosZero => if isNegative x then DecimalValue.NegZero else DecimalValue.PosZero
+  | DecimalValue.NegZero, _ => if isNegative y then DecimalValue.PosZero else DecimalValue.NegZero
+  | _, DecimalValue.NegZero => if isNegative x then DecimalValue.PosZero else DecimalValue.NegZero
   | DecimalValue.Rational ⟨p, _⟩, DecimalValue.Rational ⟨q, _⟩ =>
     RoundToDecimal128Domain (p * q) RoundingMode.halfEven
 
 instance : HMul DecimalValue DecimalValue DecimalValue where
   hMul := multiply
+
+-- Multiplication follows standard sign rules for zeros:
+-- pos * pos = +0, pos * neg = -0, neg * pos = -0, neg * neg = +0
+-- When non-zero rationals underflow to zero, the sign follows the same rules
 
 def divide (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   match x, y with
