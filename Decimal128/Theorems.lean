@@ -140,6 +140,26 @@ theorem additionCorrect (p : Rat) (q : Rat) :
   simp [add]
   exact h_round
 
+-- Proves that when two suitable rationals sum to zero, addition returns a zero
+-- Note: When two non-zero rationals sum to exactly zero, the result is always
+-- positive zero. This matches JavaScript behavior where -1 + 1 = +0 (not -0).
+-- The only way to get -0 from addition is -0 + -0 = -0.
+theorem additionZeroResult (p : Rat) (q : Rat) :
+  isRationalSuitable p
+  → isRationalSuitable q
+  → p + q = 0
+  → ∃ (s1 : isRationalSuitable p) (s2 : isRationalSuitable q),
+    isZero (add (DecimalValue.Rational ⟨p, s1⟩)
+                (DecimalValue.Rational ⟨q, s2⟩))
+:= by
+  intro hp hq h_sum
+  use hp, hq
+  simp [add]
+  -- RoundToDecimal128Domain returns PosZero when given 0
+  rw [h_sum]
+  simp [RoundToDecimal128Domain]
+  simp [isZero]
+
 -- Proves that subtracting two suitable rationals produces the expected result
 theorem subtractionCorrect (p : Rat) (q : Rat) :
   isRationalSuitable p

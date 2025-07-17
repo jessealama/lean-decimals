@@ -65,8 +65,8 @@ def add (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   | DecimalValue.Rational ⟨p, _⟩, DecimalValue.Rational ⟨q, _⟩ =>
     RoundToDecimal128Domain (p + q) RoundingMode.halfEven
 
-  instance : HAdd DecimalValue DecimalValue DecimalValue where
-    hAdd := add
+instance : HAdd DecimalValue DecimalValue DecimalValue where
+  hAdd := add
 
 def sub (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   match x, y with
