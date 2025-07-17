@@ -35,7 +35,7 @@ def negate (x : DecimalValue) : DecimalValue :=
   match x with
   | DecimalValue.NaN => DecimalValue.NaN
   | DecimalValue.NegInfinity => DecimalValue.PosInfinity
-  | DecimalValue.PosInfinity => DecimalValue.PosInfinity
+  | DecimalValue.PosInfinity => DecimalValue.NegInfinity
   | DecimalValue.PosZero => DecimalValue.NegZero
   | DecimalValue.NegZero => DecimalValue.PosZero
   | DecimalValue.Rational ⟨q, s'⟩ =>

@@ -54,6 +54,39 @@ theorem negationCorrect (p : Rat) :
   use h1, h2
   simp [negate]
 
+-- Proves that negating positive zero gives negative zero
+theorem negatePosZero :
+  negate DecimalValue.PosZero = DecimalValue.NegZero
+:= by rfl
+
+-- Proves that negating negative zero gives positive zero
+theorem negateNegZero :
+  negate DecimalValue.NegZero = DecimalValue.PosZero
+:= by rfl
+
+-- Proves that negating positive infinity gives negative infinity
+theorem negatePosInfinity :
+  negate DecimalValue.PosInfinity = DecimalValue.NegInfinity
+:= by rfl
+
+-- Proves that negating negative infinity gives positive infinity
+theorem negateNegInfinity :
+  negate DecimalValue.NegInfinity = DecimalValue.PosInfinity
+:= by rfl
+
+-- Proves that negation preserves the zero property
+theorem negateZeroIsZero (x : DecimalValue) :
+  isZero x → isZero (negate x)
+:= by
+  intro h
+  cases x with
+  | PosZero => simp [negate, isZero]
+  | NegZero => simp [negate, isZero]
+  | NaN => simp [isZero] at h
+  | PosInfinity => simp [isZero] at h
+  | NegInfinity => simp [isZero] at h
+  | Rational _ => simp [isZero] at h
+
 -- Proves that absolute value of a suitable rational produces the expected result
 theorem absoluteValueCorrect (p : Rat) :
   isRationalSuitable p
