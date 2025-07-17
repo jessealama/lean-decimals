@@ -152,6 +152,25 @@ def truncate (x : Rat) : Rat :=
   then 0 - Rat.floor (0 - x)
   else Rat.floor x
 
+-- JavaScript remainder operator (%) behavior:
+-- The remainder operation returns the remainder left over when one operand is divided
+-- by a second operand. It always takes the sign of the dividend.
+-- Formula: dividend % divisor = dividend - Math.trunc(dividend/divisor) * divisor
+--
+-- Examples from JavaScript:
+--   7 % 3 = 1          (positive dividend, positive divisor)
+--   -7 % 3 = -1        (negative dividend, positive divisor → negative result)
+--   7 % -3 = 1         (positive dividend, negative divisor → positive result)
+--   -7 % -3 = -1       (negative dividend, negative divisor → negative result)
+--   7.5 % 2 = 1.5      (works with decimals)
+--   -7.5 % 2 = -1.5    (decimal with negative dividend)
+--
+-- Special cases:
+--   ±Infinity % n = NaN
+--   n % ±Infinity = n (returns dividend unchanged)
+--   n % 0 = NaN
+--   0 % n = 0 (with appropriate sign handling for -0)
+
 def remainder (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   match x, y with
   | DecimalValue.NaN, _ => DecimalValue.NaN
@@ -162,11 +181,11 @@ def remainder (x : DecimalValue) (y : DecimalValue) : DecimalValue :=
   | _, DecimalValue.NegInfinity => x
   | _, DecimalValue.PosZero => DecimalValue.NaN
   | _, DecimalValue.NegZero => DecimalValue.NaN
-  | DecimalValue.PosZero, x => x
-  | DecimalValue.NegZero, x => x
+  | DecimalValue.PosZero, _ => DecimalValue.PosZero
+  | DecimalValue.NegZero, _ => DecimalValue.NegZero
   | DecimalValue.Rational ⟨p, _⟩, DecimalValue.Rational ⟨q, _⟩ =>
     let quotient : Rat := truncate (p / q)
-    let r : Rat := p - (quotient * q)
+    let r : Rat := p - (q * quotient)
     if r == 0 && p < 0
     then DecimalValue.NegZero
     else RoundToDecimal128Domain r RoundingMode.halfEven
