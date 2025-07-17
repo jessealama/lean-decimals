@@ -472,6 +472,12 @@ theorem remainderCorrect (p : Rat) (q : Rat) :
   -- The rest requires careful matching of the if-then-else expression
   sorry
 
+-- Proves that scale10 preserves the sign of zeros
+theorem scale10PreservesZeroSign (n : Int) :
+  scale10 DecimalValue.PosZero n = DecimalValue.PosZero ∧
+  scale10 DecimalValue.NegZero n = DecimalValue.NegZero
+:= by simp [scale10]
+
 -- Proves that scaling by powers of 10 produces the expected result
 theorem scale10Correct (p : Rat) (n : Int) :
   isRationalSuitable p

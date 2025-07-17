@@ -158,7 +158,9 @@ instance : HDiv DecimalValue DecimalValue DecimalValue where
 -- Infinity/infinity: always NaN
 -- When rationals underflow to zero, sign follows standard rules
 
--- it should be possible for n to be positive or negative infinity, or even NaN
+-- Scales a decimal value by 10^n
+-- Preserves the sign of zeros: scale10(+0, n) = +0, scale10(-0, n) = -0
+-- When rationals underflow to zero, the sign is preserved via RoundToDecimal128Domain
 def scale10 (x : DecimalValue) (n : Int) : DecimalValue :=
   match x with
   | DecimalValue.NaN => DecimalValue.NaN
