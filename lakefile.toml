@@ -1,0 +1,15 @@
+name = "decimal128"
+version = "0.1.0"
+keywords = ["math"]
+defaultTargets = ["Decimal128"]
+
+[leanOptions]
+pp.unicode.fun = true
+
+[[require]]
+name = "mathlib"
+from = "leanprover-community"
+rev = "main"
+
+[[lean_lib]]
+name = "Decimal128"
