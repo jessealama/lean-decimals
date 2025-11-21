@@ -22,14 +22,19 @@ This is a Lean 4 library implementing IEEE 754 decimal128 floating-point arithme
   - Defines `SuitableRationals` - rationals that fit within decimal128 constraints
 - `Decimal128/Constants.lean` - IEEE 754 decimal128 constants
 - `Decimal128/Arithmetic.lean` - Arithmetic operations
-- `Decimal128/Comparisons.lean` - Comparison operations  
+- `Decimal128/Comparisons.lean` - Comparison operations
 - `Decimal128/Theorems.lean` - Mathematical theorems and proofs
 
 The library uses Mathlib extensively for mathematical foundations. Testing is done through Lean's proof system rather than traditional unit tests.
 
 ## Development Setup
 
-1. Ensure Lean 4 is installed (uses v4.20.0-rc5)
+1. Ensure Lean 4 is installed (uses v4.22)
 2. Run `lake exe cache get` to download mathlib cache
 3. Run `lake build` to build the project
 4. Optional: Run `npm install` if you need formatting tools
+
+## Proof strategies
+
+- In proofs, make sure that we do not use `simp` tactic such
+  that `simp` does not make progress.
