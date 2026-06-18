@@ -11,7 +11,20 @@
       "Bash(lake:*)",
       "Bash(rm:*)",
       "Bash(timeout 30 lake build:*)",
-      "Bash(timeout 20 lake build:*)"
+      "Bash(timeout 20 lake build:*)",
+      "Bash(git commit:*)",
+      "Bash(node:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm run lint)",
+      "Bash(npx prettier CLAUDE.md --check)",
+      "Bash(npx prettier:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(echo:*)",
+      "Bash(git pull:*)",
+      "Bash(npm run format:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   },
